@@ -1,0 +1,10 @@
+$ npm run build
+Started: 2026-07-24T18:01:02.691Z
+Status: UNAVAILABLE
+Exit: n/a
+
+STDOUT:
+(empty)
+
+STDERR:
+spawnSync npm ENOENT

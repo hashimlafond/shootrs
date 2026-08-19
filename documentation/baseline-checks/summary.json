@@ -1,0 +1,72 @@
+[
+  {
+    "name": "node-version",
+    "command": "/Users/hashimlafond/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node --version",
+    "status": "PASSED",
+    "exit": 0,
+    "note": ""
+  },
+  {
+    "name": "node-check-app-js",
+    "command": "/Users/hashimlafond/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node --check app.js",
+    "status": "PASSED",
+    "exit": 0,
+    "note": ""
+  },
+  {
+    "name": "node-check-platform-js",
+    "command": "/Users/hashimlafond/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node --check platform.js",
+    "status": "PASSED",
+    "exit": 0,
+    "note": ""
+  },
+  {
+    "name": "node-check-service-worker-js",
+    "command": "/Users/hashimlafond/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node --check service-worker.js",
+    "status": "PASSED",
+    "exit": 0,
+    "note": ""
+  },
+  {
+    "name": "node-tests-platform",
+    "command": "/Users/hashimlafond/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node tests/platform.test.js",
+    "status": "PASSED",
+    "exit": 0,
+    "note": ""
+  },
+  {
+    "name": "npm-run-build",
+    "command": "npm run build",
+    "status": "UNAVAILABLE",
+    "exit": "n/a",
+    "note": "spawnSync npm ENOENT"
+  },
+  {
+    "name": "npm-run-lint",
+    "command": "npm run lint",
+    "status": "UNAVAILABLE",
+    "exit": "n/a",
+    "note": "spawnSync npm ENOENT"
+  },
+  {
+    "name": "npm-run-typecheck",
+    "command": "npm run typecheck",
+    "status": "UNAVAILABLE",
+    "exit": "n/a",
+    "note": "spawnSync npm ENOENT"
+  },
+  {
+    "name": "npm-test",
+    "command": "npm test",
+    "status": "UNAVAILABLE",
+    "exit": "n/a",
+    "note": "spawnSync npm ENOENT"
+  },
+  {
+    "name": "npm-audit",
+    "command": "npm audit --omit=dev",
+    "status": "UNAVAILABLE",
+    "exit": "n/a",
+    "note": "spawnSync npm ENOENT"
+  }
+]

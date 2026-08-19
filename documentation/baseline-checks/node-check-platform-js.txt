@@ -1,0 +1,10 @@
+$ /Users/hashimlafond/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node --check platform.js
+Started: 2026-07-24T18:01:00.505Z
+Status: PASSED
+Exit: 0
+
+STDOUT:
+(empty)
+
+STDERR:
+(empty)

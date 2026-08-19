@@ -1,0 +1,20 @@
+$ /Users/hashimlafond/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node tests/platform.test.js
+Started: 2026-07-24T18:01:02.647Z
+Status: PASSED
+Exit: 0
+
+STDOUT:
+ok - subject can create an immediate request without exposing exact address
+ok - only one Shootr can accept a request lock
+ok - booking confirms only after lock and payment authorization
+ok - booking can expire, cancel, and rematch through supported states
+ok - pricing uses visible starter package plus transparent modifiers
+ok - payment service keeps authorization separate from capture and refunds
+ok - role guards separate subject, shootr, and internal routes
+ok - gallery access is private and share links expire
+ok - upload batches support direct resumable retry
+ok - reviews are only allowed after completion and never duplicated
+
+
+STDERR:
+(empty)

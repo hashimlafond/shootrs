@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="210" viewBox="0 0 900 210">
+  <rect width="900" height="210" fill="none"/>
+  <g font-family="Avenir Next, Montserrat, Arial, sans-serif" font-weight="900" font-size="124" letter-spacing="27">
+    <text x="20" y="154" fill="#FFFFFF">SH</text>
+    <text x="267" y="154" fill="#1E88FF">Ü</text>
+    <text x="405" y="154" fill="#FFFFFF">TER</text>
+  </g>
+  <g fill="none" stroke="#1E88FF" stroke-width="11" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M276 26h38M276 26v38"/>
+    <path d="M389 26h38M427 26v38"/>
+  </g>
+</svg>

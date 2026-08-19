@@ -1,0 +1,11 @@
+$ /Users/hashimlafond/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node --version
+Started: 2026-07-24T18:01:00.431Z
+Status: PASSED
+Exit: 0
+
+STDOUT:
+v24.14.0
+
+
+STDERR:
+(empty)

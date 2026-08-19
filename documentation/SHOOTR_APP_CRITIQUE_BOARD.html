@@ -1,0 +1,454 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Shootr App Critique Board</title>
+  <style>
+    :root {
+      --ink: #07111f;
+      --muted: #647082;
+      --blue: #3268ff;
+      --line: #dfe6f0;
+      --surface: #f5f7fb;
+      --card: #ffffff;
+      --risk: #b42318;
+      --good: #047857;
+      --warn: #b45309;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--surface);
+      color: var(--ink);
+      font-family: Avenir Next, Inter, Arial, sans-serif;
+      line-height: 1.45;
+    }
+
+    header {
+      padding: 56px 48px 32px;
+      background: #fff;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .brand {
+      color: var(--blue);
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      max-width: 980px;
+      margin: 14px 0 10px;
+      font-size: clamp(40px, 7vw, 86px);
+      line-height: 0.95;
+      letter-spacing: 0;
+    }
+
+    .summary {
+      max-width: 780px;
+      color: var(--muted);
+      font-size: 19px;
+    }
+
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 24px;
+    }
+
+    .pill {
+      padding: 9px 13px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: #fff;
+      color: var(--ink);
+      font-weight: 800;
+      font-size: 13px;
+    }
+
+    main {
+      padding: 36px 48px 72px;
+    }
+
+    .section {
+      max-width: 1500px;
+      margin: 0 auto 48px;
+    }
+
+    h2 {
+      margin: 0 0 18px;
+      font-size: 28px;
+      line-height: 1.1;
+    }
+
+    .findings {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+    }
+
+    .finding {
+      padding: 20px;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      box-shadow: 0 18px 46px rgba(7, 17, 31, 0.06);
+    }
+
+    .finding strong {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 16px;
+    }
+
+    .finding p {
+      margin: 0;
+      color: var(--muted);
+    }
+
+    .tag {
+      display: inline-block;
+      margin-bottom: 12px;
+      color: #fff;
+      background: var(--blue);
+      border-radius: 999px;
+      padding: 5px 9px;
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .tag.risk {
+      background: var(--risk);
+    }
+
+    .tag.warn {
+      background: var(--warn);
+    }
+
+    .tag.good {
+      background: var(--good);
+    }
+
+    .board {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(310px, 1fr));
+      gap: 26px;
+    }
+
+    .card {
+      overflow: hidden;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      box-shadow: 0 22px 60px rgba(7, 17, 31, 0.08);
+    }
+
+    .screen {
+      display: block;
+      width: 100%;
+      background: #eef2f8;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .notes {
+      padding: 18px 18px 20px;
+    }
+
+    .notes h3 {
+      margin: 0 0 8px;
+      font-size: 20px;
+      line-height: 1.1;
+    }
+
+    .health {
+      display: inline-flex;
+      align-items: center;
+      margin-bottom: 12px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .notes ul {
+      margin: 0;
+      padding-left: 18px;
+      color: var(--muted);
+    }
+
+    .notes li + li {
+      margin-top: 8px;
+    }
+
+    .next {
+      margin-top: 18px;
+      padding: 14px;
+      border-radius: 14px;
+      background: #eef4ff;
+      color: var(--ink);
+      font-weight: 800;
+    }
+
+    @media (max-width: 720px) {
+      header,
+      main {
+        padding-left: 18px;
+        padding-right: 18px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">Shootr Product Audit</div>
+    <h1>Mobile app critique board.</h1>
+    <p class="summary">A screenshot-based review of the current Shootr app experience. The product has a strong mobile-first shell, but the flow needs stronger continuity, truthful marketplace states, and production-safe trust patterns.</p>
+    <div class="meta">
+      <span class="pill">Captured: July 24, 2026</span>
+      <span class="pill">Viewport: 390 x 844</span>
+      <span class="pill">Mode: Prototype audit</span>
+      <span class="pill">No code changes</span>
+    </div>
+  </header>
+
+  <main>
+    <section class="section">
+      <h2>Highest-impact findings</h2>
+      <div class="findings">
+        <div class="finding">
+          <span class="tag risk">Trust risk</span>
+          <strong>Demo data makes the network feel fake.</strong>
+          <p>“Demo Go Shootr,” fake ratings, demo Moments, and empty Bookings tell conflicting stories. Production mode needs either real data or honest empty states.</p>
+        </div>
+        <div class="finding">
+          <span class="tag warn">Flow risk</span>
+          <strong>The intended step order exists, but the lived flow can skip context.</strong>
+          <p>From the normal Book entry, the Now action jumped to “Choose your Shootr,” bypassing Location in the observed walk.</p>
+        </div>
+        <div class="finding">
+          <span class="tag warn">UX risk</span>
+          <strong>Bottom navigation overlaps key content.</strong>
+          <p>Several screens put fields or next content under the fixed bottom nav. Add safe-area/scroll padding across app routes.</p>
+        </div>
+        <div class="finding">
+          <span class="tag good">Strength</span>
+          <strong>The brand system is working.</strong>
+          <p>The home screen, typography, Focus Mark, and blue action language feel distinct, simple, and mobile-native.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>Flow screenshots and notes</h2>
+      <div class="board">
+        <article class="card">
+          <img class="screen" src="app-critique-screenshots/01-home.png" alt="Shootr home screen">
+          <div class="notes">
+            <h3>1. Home</h3>
+            <div class="health">Health: Strong</div>
+            <ul>
+              <li>“Ready.” is memorable and action-first.</li>
+              <li>Now/Later is the cleanest expression of the product.</li>
+              <li>The value line is slightly cramped on small width.</li>
+            </ul>
+            <div class="next">Keep this screen nearly this simple.</div>
+          </div>
+        </article>
+
+        <article class="card">
+          <img class="screen" src="app-critique-screenshots/02-book-location.png" alt="Location step">
+          <div class="notes">
+            <h3>2. Location</h3>
+            <div class="health">Health: Medium</div>
+            <ul>
+              <li>The location-denied fallback is useful and direct.</li>
+              <li>Lower location-type controls are hidden by the bottom nav.</li>
+              <li>“Choose on Map” appears before a real map integration exists.</li>
+            </ul>
+            <div class="next">Add safe-area padding and validate map/address behavior.</div>
+          </div>
+        </article>
+
+        <article class="card">
+          <img class="screen" src="app-critique-screenshots/03-book-timing.png" alt="Now or Later step">
+          <div class="notes">
+            <h3>3. Now or Later</h3>
+            <div class="health">Health: Medium</div>
+            <ul>
+              <li>The segmented choice is easy to understand.</li>
+              <li>Date and time fields remain visible when Now is selected, which creates hesitation.</li>
+              <li>No “continue” affordance is visible, so progression can feel mysterious.</li>
+            </ul>
+            <div class="next">Hide date/time for Now or clarify they apply only to Later.</div>
+          </div>
+        </article>
+
+        <article class="card">
+          <img class="screen" src="app-critique-screenshots/04-book-shootr-preference.png" alt="Choose your Shootr step">
+          <div class="notes">
+            <h3>4. Choose your Shootr</h3>
+            <div class="health">Health: Strong</div>
+            <ul>
+              <li>Phone, Pro Camera, No Preference is the right mental model.</li>
+              <li>Cards feel tappable and readable.</li>
+              <li>Selected Focus Mark is subtle but understandable.</li>
+            </ul>
+            <div class="next">Keep this interaction. It is one of the best screens.</div>
+          </div>
+        </article>
+
+        <article class="card">
+          <img class="screen" src="app-critique-screenshots/05-book-duration.png" alt="Duration step">
+          <div class="notes">
+            <h3>5. Duration</h3>
+            <div class="health">Health: Good</div>
+            <ul>
+              <li>Quick, Standard, Extended is easy.</li>
+              <li>Starting prices are clear enough for prototype mode.</li>
+              <li>Production needs full total before authorization.</li>
+            </ul>
+            <div class="next">Tie duration to a real quote snapshot later.</div>
+          </div>
+        </article>
+
+        <article class="card">
+          <img class="screen" src="app-critique-screenshots/06-finding-shootr.png" alt="Finding your Shootr step">
+          <div class="notes">
+            <h3>6. Finding your Shootr</h3>
+            <div class="health">Health: Medium</div>
+            <ul>
+              <li>The screen communicates availability and urgency well.</li>
+              <li>“Finding” conflicts with asking the user to tap “See nearby Shootrs.”</li>
+              <li>Progress bar says near-complete, but the system has not really matched anyone.</li>
+            </ul>
+            <div class="next">Either auto-search or rename this to “Search nearby.”</div>
+          </div>
+        </article>
+
+        <article class="card">
+          <img class="screen" src="app-critique-screenshots/06b-nearby-shootrs.png" alt="Nearby Shootrs match card">
+          <div class="notes">
+            <h3>7. Nearby Shootrs</h3>
+            <div class="health">Health: Weak</div>
+            <ul>
+              <li>The card layout is strong and scannable.</li>
+              <li>“Demo Go Shootr” immediately damages trust.</li>
+              <li>4.9 rating should not appear unless backed by real completed bookings.</li>
+            </ul>
+            <div class="next">Remove fake marketplace proof from normal mode.</div>
+          </div>
+        </article>
+
+        <article class="card">
+          <img class="screen" src="app-critique-screenshots/08-review.png" alt="Review step">
+          <div class="notes">
+            <h3>8. Review</h3>
+            <div class="health">Health: Medium</div>
+            <ul>
+              <li>Itemized pricing is the right trust move.</li>
+              <li>Confirm action appears below the fold.</li>
+              <li>Demo Shootr and approximate area still make this feel simulated.</li>
+            </ul>
+            <div class="next">Show total and primary confirm action within first viewport.</div>
+          </div>
+        </article>
+
+        <article class="card">
+          <img class="screen" src="app-critique-screenshots/09-bookings.png" alt="Bookings empty state">
+          <div class="notes">
+            <h3>9. Bookings</h3>
+            <div class="health">Health: Weak</div>
+            <ul>
+              <li>The tabs/categories are understandable.</li>
+              <li>Empty bookings conflict with demo tracker and Moments data elsewhere.</li>
+              <li>No “Book a shoot” recovery action is visible in the empty state.</li>
+            </ul>
+            <div class="next">Add honest empty-state CTA and align demo content globally.</div>
+          </div>
+        </article>
+
+        <article class="card">
+          <img class="screen" src="app-critique-screenshots/10-tracker.png" alt="Live tracker">
+          <div class="notes">
+            <h3>10. Tracker</h3>
+            <div class="health">Health: Strong visual, weak state</div>
+            <ul>
+              <li>The map visual is clean and brand-native.</li>
+              <li>“Finding someone” conflicts with showing a marker, route, and 8 min ETA.</li>
+              <li>Needs explicit fallback for unavailable location.</li>
+            </ul>
+            <div class="next">Map UI states to actual booking-state machine states.</div>
+          </div>
+        </article>
+
+        <article class="card">
+          <img class="screen" src="app-critique-screenshots/11-moments.png" alt="Moments gallery list">
+          <div class="notes">
+            <h3>11. Moments</h3>
+            <div class="health">Health: Medium</div>
+            <ul>
+              <li>Simple private-gallery card is a good direction.</li>
+              <li>Demo Jasmine gallery conflicts with empty Bookings.</li>
+              <li>Expiration is present, which is a good privacy cue.</li>
+            </ul>
+            <div class="next">Only show Moments tied to real completed bookings.</div>
+          </div>
+        </article>
+
+        <article class="card">
+          <img class="screen" src="app-critique-screenshots/12-profile.png" alt="Profile screen">
+          <div class="notes">
+            <h3>12. Profile</h3>
+            <div class="health">Health: Good</div>
+            <ul>
+              <li>Unified account structure is clear.</li>
+              <li>Account rows are familiar and readable.</li>
+              <li>Bottom nav overlaps the next section.</li>
+            </ul>
+            <div class="next">Increase page bottom padding across profile subroutes.</div>
+          </div>
+        </article>
+
+        <article class="card">
+          <img class="screen" src="app-critique-screenshots/13-become-shootr.png" alt="Become a Shootr onboarding">
+          <div class="notes">
+            <h3>13. Become a Shootr</h3>
+            <div class="health">Health: Good start</div>
+            <ul>
+              <li>The legal/private name explanation is reassuring.</li>
+              <li>DOB and age confirmation are appropriate for marketplace safety.</li>
+              <li>Needs clearer save/resume and privacy policy affordance.</li>
+            </ul>
+            <div class="next">Connect this to real application records and resumable progress.</div>
+          </div>
+        </article>
+
+        <article class="card">
+          <img class="screen" src="app-critique-screenshots/14-admin.png" alt="Admin restricted screen">
+          <div class="notes">
+            <h3>14. Admin</h3>
+            <div class="health">Health: Risk</div>
+            <ul>
+              <li>Restricted messaging is better than exposing admin tools.</li>
+              <li>The route is still public and visually reachable.</li>
+              <li>Consumer-style header/CTA makes internal access feel informal.</li>
+            </ul>
+            <div class="next">Move admin behind real internal auth and separate navigation.</div>
+          </div>
+        </article>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

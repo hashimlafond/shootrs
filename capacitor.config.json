@@ -1,0 +1,8 @@
+{
+  "appId": "com.shootr.app",
+  "appName": "Shootrs",
+  "webDir": "dist",
+  "server": {
+    "iosScheme": "https"
+  }
+}
