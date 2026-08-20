@@ -1,4 +1,3 @@
-const currentUserId = "local-review-user";
 const cloudKitPluginName = "ShootrsCloudKitSafety";
 const safetyCollections = [
   "reports",
@@ -20,20 +19,33 @@ function unavailable() {
   return new Error("CloudKit safety backend is not available until the iCloud container and native CloudKit bridge are configured.");
 }
 
+function persistentUserId() {
+  const key = "shootr:safety:user-id";
+  try {
+    const existing = localStorage.getItem(key);
+    if (existing) return existing;
+    const generated = `user-${crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`}`;
+    localStorage.setItem(key, generated);
+    return generated;
+  } catch {
+    return "local-review-user";
+  }
+}
+
 export function getCurrentUserId() {
-  return currentUserId;
+  return persistentUserId();
 }
 
 export async function fetchSafetyState({ admin = false } = {}) {
   const plugin = cloudKitPlugin();
   if (!plugin?.fetchSafetyState) throw unavailable();
-  return plugin.fetchSafetyState({ userId: currentUserId, admin });
+  return plugin.fetchSafetyState({ userId: getCurrentUserId(), admin });
 }
 
 export async function submitSafetyRecord(type, record) {
   const plugin = cloudKitPlugin();
   if (!plugin?.saveSafetyRecord) throw unavailable();
-  return plugin.saveSafetyRecord({ type, record: { ...record, userId: record?.userId || currentUserId } });
+  return plugin.saveSafetyRecord({ type, record: { ...record, userId: record?.userId || getCurrentUserId() } });
 }
 
 export async function submitModerationAction(record) {
