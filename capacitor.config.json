@@ -4,5 +4,12 @@
   "webDir": "dist",
   "server": {
     "iosScheme": "https"
-  }
+  },
+  "packageClassList": [
+    "AppPlugin",
+    "CAPBrowserPlugin",
+    "KeyboardPlugin",
+    "StatusBarPlugin",
+    "ShootrsCloudKitSafetyPlugin"
+  ]
 }

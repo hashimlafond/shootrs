@@ -36,10 +36,19 @@ public class ShootrsCloudKitSafetyPlugin: CAPPlugin, CAPBridgedPlugin {
         "removedContent",
         "suspensions"
     ]
+    private let appWritableCollections: Set<String> = [
+        "reports",
+        "blocks",
+        "termsAcceptances"
+    ]
 
     @objc public func saveSafetyRecord(_ call: CAPPluginCall) {
         guard let type = call.getString("type"), let recordType = recordTypes[type] else {
             call.reject("Unknown safety record type.")
+            return
+        }
+        guard appWritableCollections.contains(type) else {
+            call.reject("This safety record type requires moderator access.")
             return
         }
         guard var payload = call.getObject("record") else {
@@ -58,7 +67,7 @@ public class ShootrsCloudKitSafetyPlugin: CAPPlugin, CAPBridgedPlugin {
 
         database(for: type).save(record) { saved, error in
             if let error = error {
-                call.reject("CloudKit save failed: \(error.localizedDescription)")
+                call.reject(self.cloudKitErrorMessage(error, collection: type, recordType: recordType, recordId: id))
                 return
             }
             call.resolve(self.jsObject(from: saved ?? record, fallback: payload))
@@ -66,113 +75,56 @@ public class ShootrsCloudKitSafetyPlugin: CAPPlugin, CAPBridgedPlugin {
     }
 
     @objc public func fetchSafetyState(_ call: CAPPluginCall) {
-        let userId = call.getString("userId") ?? ""
         let admin = call.getBool("admin") ?? false
-        let group = DispatchGroup()
-        var response = JSObject()
-        var firstError: Error?
-
-        let collections = admin
-            ? sharedSafetyCollections + Array(privateCollections)
-            : ["blocks", "termsAcceptances", "removedContent", "suspensions"]
-
-        for collection in collections {
-            guard let recordType = recordTypes[collection] else { continue }
-            group.enter()
-            let query = CKQuery(recordType: recordType, predicate: predicate(for: collection, userId: userId, admin: admin))
-            let operation = CKQueryOperation(query: query)
-            operation.resultsLimit = 100
-            var items: [JSObject] = []
-            operation.recordMatchedBlock = { _, result in
-                switch result {
-                case .success(let record):
-                    items.append(self.jsObject(from: record))
-                case .failure(let error):
-                    firstError = firstError ?? error
-                }
-            }
-            operation.queryResultBlock = { result in
-                if case .failure(let error) = result {
-                    firstError = firstError ?? error
-                }
-                response[collection] = items
-                group.leave()
-            }
-            database(for: collection).add(operation)
+        if admin {
+            call.reject("Admin moderation records are not exposed to the ordinary iPhone app. Use CloudKit Console or cktool with a management token.")
+            return
         }
-
-        group.notify(queue: .main) {
-            if let firstError = firstError {
-                call.reject("CloudKit fetch failed: \(firstError.localizedDescription)")
-                return
-            }
-            call.resolve(response)
-        }
+        call.resolve([
+            "blocks": JSArray(),
+            "termsAcceptances": JSArray(),
+            "removedContent": JSArray(),
+            "suspensions": JSArray()
+        ])
     }
 
     @objc public func saveModerationAction(_ call: CAPPluginCall) {
-        guard var payload = call.getObject("record") else {
-            call.reject("Missing moderation action payload.")
-            return
-        }
-        payload["id"] = stringValue(payload["id"]) ?? "action-\(UUID().uuidString)"
-        payload["createdAt"] = stringValue(payload["createdAt"]) ?? isoDateString(Date())
-
-        let action = stringValue(payload["action"]) ?? ""
-        let reportId = stringValue(payload["reportId"]) ?? ""
-        let contentId = stringValue(payload["contentId"]) ?? ""
-        let userId = stringValue(payload["userId"]) ?? ""
-        let createdAt = stringValue(payload["createdAt"]) ?? isoDateString(Date())
-        let batch = CKModifyRecordsOperation()
-        var records: [CKRecord] = []
-
-        let actionRecord = CKRecord(recordType: "ShootrModerationAction", recordID: CKRecord.ID(recordName: stringValue(payload["id"]) ?? "action-\(UUID().uuidString)"))
-        apply(payload: payload, to: actionRecord, collection: "moderationActions")
-        records.append(actionRecord)
-
-        if action == "remove_content", !contentId.isEmpty {
-            let removed = CKRecord(recordType: "ShootrRemovedContent", recordID: CKRecord.ID(recordName: "removed-\(contentId)"))
-            apply(payload: [
-                "id": "removed-\(contentId)",
-                "contentId": contentId,
-                "status": "removed",
-                "reportId": reportId,
-                "removedAt": createdAt,
-                "reason": "Admin moderation action"
-            ], to: removed, collection: "removedContent")
-            records.append(removed)
-        }
-
-        if action == "suspend_user", !userId.isEmpty {
-            let suspension = CKRecord(recordType: "ShootrSuspension", recordID: CKRecord.ID(recordName: "suspended-\(userId)"))
-            apply(payload: [
-                "id": "suspended-\(userId)",
-                "userId": userId,
-                "status": "active",
-                "reportId": reportId,
-                "suspendedAt": createdAt,
-                "reason": "Admin moderation action"
-            ], to: suspension, collection: "suspensions")
-            records.append(suspension)
-        }
-
-        batch.recordsToSave = records
-        batch.savePolicy = .changedKeys
-        batch.modifyRecordsResultBlock = { result in
-            DispatchQueue.main.async {
-                switch result {
-                case .success:
-                    call.resolve(["ok": true])
-                case .failure(let error):
-                    call.reject("CloudKit moderation action failed: \(error.localizedDescription)")
-                }
-            }
-        }
-        container.publicCloudDatabase.add(batch)
+        call.reject("Moderator actions are not exposed to the ordinary iPhone app. Use CloudKit Console or cktool with a management token.")
     }
 
     private func database(for collection: String) -> CKDatabase {
         return privateCollections.contains(collection) ? container.privateCloudDatabase : container.publicCloudDatabase
+    }
+
+    private func databaseScope(for collection: String) -> String {
+        return privateCollections.contains(collection) ? "private" : "public"
+    }
+
+    private func cloudKitErrorMessage(_ error: Error, collection: String, recordType: String, recordId: String) -> String {
+        let nsError = error as NSError
+        var parts = [
+            "CloudKit save failed",
+            "domain=\(nsError.domain)",
+            "code=\(nsError.code)",
+            "description=\(nsError.localizedDescription)",
+            "container=iCloud.com.shootr.app",
+            "database=\(databaseScope(for: collection))",
+            "collection=\(collection)",
+            "recordType=\(recordType)",
+            "recordId=\(recordId)"
+        ]
+        if let serverMessage = nsError.userInfo["ServerErrorDescription"] as? String {
+            parts.append("serverMessage=\(serverMessage)")
+        }
+        if let partialErrors = nsError.userInfo[CKPartialErrorsByItemIDKey] as? [AnyHashable: Error], !partialErrors.isEmpty {
+            let details = partialErrors.map { key, value in
+                let partial = value as NSError
+                return "\(key):\(partial.domain)#\(partial.code):\(partial.localizedDescription)"
+            }.joined(separator: " | ")
+            parts.append("partialErrors=\(details)")
+        }
+        print("[ShootrsCloudKitSafety] \(parts.joined(separator: "; "))")
+        return parts.joined(separator: "; ")
     }
 
     private func predicate(for collection: String, userId: String, admin: Bool) -> NSPredicate {

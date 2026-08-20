@@ -2910,7 +2910,7 @@ blockquote {
   }
 
   .app-main {
-    padding-bottom: calc(86px + var(--safe-bottom));
+    padding-bottom: calc(142px + var(--safe-bottom));
   }
 
   .bottom-nav {
@@ -4461,6 +4461,19 @@ a:focus-visible {
 
 .keyboard-visible .app-screen {
   padding-bottom: 24px;
+}
+
+.mobile-surface .onboarding-stepper + .bottom-nav {
+  display: none;
+}
+
+.mobile-surface .support-flow-screen + .bottom-nav {
+  display: none;
+}
+
+.mobile-surface:has([data-report-form]) .bottom-nav,
+.mobile-surface:has([data-block-form]) .bottom-nav {
+  display: none;
 }
 
 @media (max-height: 720px) {

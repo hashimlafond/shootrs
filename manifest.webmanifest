@@ -1,6 +1,6 @@
 {
-  "name": "Shootr",
-  "short_name": "Shootr",
+  "name": "Shootrs",
+  "short_name": "Shootrs",
   "description": "Find someone nearby to capture your moment.",
   "start_url": "./app/",
   "scope": "./",

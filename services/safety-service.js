@@ -1,4 +1,7 @@
+import { registerPlugin } from "@capacitor/core";
+
 const cloudKitPluginName = "ShootrsCloudKitSafety";
+const registeredCloudKitPlugin = registerPlugin(cloudKitPluginName);
 const safetyCollections = [
   "reports",
   "incidents",
@@ -12,11 +15,12 @@ const safetyCollections = [
 ];
 
 function cloudKitPlugin() {
-  return globalThis.Capacitor?.Plugins?.[cloudKitPluginName] || null;
+  return registeredCloudKitPlugin || globalThis.Capacitor?.Plugins?.[cloudKitPluginName] || null;
 }
 
 function unavailable() {
-  return new Error("CloudKit safety backend is not available until the iCloud container and native CloudKit bridge are configured.");
+  const pluginNames = Object.keys(globalThis.Capacitor?.Plugins || {}).join(", ") || "none";
+  return new Error(`CloudKit safety backend is not available. Native plugin: ${cloudKitPluginName}. Capacitor plugins visible: ${pluginNames}.`);
 }
 
 function persistentUserId() {

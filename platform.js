@@ -662,7 +662,7 @@ function galleryScreen() {
   const approved = hasShootrApproval();
   if (!gallery) {
     return pageHero("Moments", "Your Moments") + `
-      <section class="app-screen">
+      <section class="app-screen support-flow-screen">
         ${emptyStateMarkup("No Moments yet", "Completed shoots will appear here after delivery.")}
       </section>
       ${bottomNav("customer")}`;
@@ -806,7 +806,7 @@ function supportScreen() {
   const supportHero = pageHero("Help", "Report, block, or get help with a booking.");
   if (isBlockFlow) {
     return supportHero + `
-      <section class="app-screen">
+      <section class="app-screen support-flow-screen">
         ${appBackBar("/app/support", "Help")}
         <form id="blockForm" class="app-panel support-form" data-block-form>
           <h2>Block contact</h2>

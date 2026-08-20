@@ -25,13 +25,13 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSCameraUsageDescription</key>
-	<string>Shootr uses the camera only when you choose to take a profile, verification, reference, or incident photo.</string>
+	<string>Shootrs uses the camera only when you choose to take a profile, verification, reference, or incident photo.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>Shootr uses your location to find nearby Shootrs and estimate arrival time after you tap Use Current Location.</string>
+	<string>Shootrs uses your location to find nearby Shootrs and estimate arrival time after you tap Use Current Location.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>Shootr saves photos to your library only when you choose to download delivered moments.</string>
+	<string>Shootrs saves photos to your library only when you choose to download delivered moments.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Shootr uses your photo library only when you choose photos to upload for your profile, portfolio, support report, or gallery.</string>
+	<string>Shootrs uses your photo library only when you choose photos to upload for your profile, portfolio, support report, or gallery.</string>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIApplicationSceneManifest</key>
