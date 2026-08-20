@@ -1,7 +1,5 @@
-import { settings } from "../config/settings.js";
-
-const adminKeyStorageKey = "shootr-admin-api-key";
 const currentUserId = "local-review-user";
+const cloudKitPluginName = "ShootrsCloudKitSafety";
 const safetyCollections = [
   "reports",
   "incidents",
@@ -14,77 +12,34 @@ const safetyCollections = [
   "termsAcceptances",
 ];
 
-function apiBase() {
-  const configured = settings.safetyApiBaseUrl || "";
-  if (configured) return configured.replace(/\/$/, "");
-  if (typeof localStorage !== "undefined") {
-    const stored = localStorage.getItem("shootr-api-base-url") || "";
-    if (stored) return stored.replace(/\/$/, "");
-  }
-  return "";
+function cloudKitPlugin() {
+  return globalThis.Capacitor?.Plugins?.[cloudKitPluginName] || null;
 }
 
-function apiUrl(path) {
-  return `${apiBase()}${path}`;
+function unavailable() {
+  return new Error("CloudKit safety backend is not available until the iCloud container and native CloudKit bridge are configured.");
 }
 
 export function getCurrentUserId() {
   return currentUserId;
 }
 
-export function getAdminApiKey({ promptIfMissing = false } = {}) {
-  if (typeof localStorage === "undefined") return "";
-  const existing = localStorage.getItem(adminKeyStorageKey) || "";
-  if (existing || !promptIfMissing || typeof window === "undefined") return existing;
-  const entered = window.prompt("Enter Shootr admin key to load shared moderation records.");
-  if (entered) localStorage.setItem(adminKeyStorageKey, entered);
-  return entered || "";
-}
-
 export async function fetchSafetyState({ admin = false } = {}) {
-  const headers = {};
-  if (admin) {
-    const key = getAdminApiKey({ promptIfMissing: true });
-    if (!key) return null;
-    headers["x-shootr-admin-key"] = key;
-  }
-  const response = await fetch(apiUrl(`/api/safety/state?userId=${encodeURIComponent(currentUserId)}`), {
-    headers,
-    cache: "no-store",
-  });
-  if (!response.ok) throw new Error(`Safety state request failed: ${response.status}`);
-  return response.json();
+  const plugin = cloudKitPlugin();
+  if (!plugin?.fetchSafetyState) throw unavailable();
+  return plugin.fetchSafetyState({ userId: currentUserId, admin });
 }
 
-export async function submitSafetyRecord(type, record, { admin = false } = {}) {
-  const headers = { "content-type": "application/json" };
-  if (admin) {
-    const key = getAdminApiKey({ promptIfMissing: true });
-    if (!key) throw new Error("Admin key required.");
-    headers["x-shootr-admin-key"] = key;
-  }
-  const response = await fetch(apiUrl("/api/safety/records"), {
-    method: "POST",
-    headers,
-    body: JSON.stringify({ type, record }),
-  });
-  if (!response.ok) throw new Error(`Safety record request failed: ${response.status}`);
-  return response.json();
+export async function submitSafetyRecord(type, record) {
+  const plugin = cloudKitPlugin();
+  if (!plugin?.saveSafetyRecord) throw unavailable();
+  return plugin.saveSafetyRecord({ type, record: { ...record, userId: record?.userId || currentUserId } });
 }
 
 export async function submitModerationAction(record) {
-  const key = getAdminApiKey({ promptIfMissing: true });
-  if (!key) throw new Error("Admin key required.");
-  const response = await fetch(apiUrl("/api/safety/moderation-actions"), {
-    method: "POST",
-    headers: {
-      "content-type": "application/json",
-      "x-shootr-admin-key": key,
-    },
-    body: JSON.stringify({ record }),
-  });
-  if (!response.ok) throw new Error(`Moderation action request failed: ${response.status}`);
-  return response.json();
+  const plugin = cloudKitPlugin();
+  if (!plugin?.saveModerationAction) throw unavailable();
+  return plugin.saveModerationAction({ record });
 }
 
 export function mergeSafetyState(store, state) {
