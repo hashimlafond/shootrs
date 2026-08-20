@@ -22,6 +22,7 @@ import { createUploadBatch, retryUpload } from "./services/upload-service.js";
 import { canReviewBooking } from "./services/review-service.js";
 import { track } from "./services/analytics-service.js";
 import { loadStore, saveStore } from "./services/storage-service.js";
+import { fetchSafetyState, getCurrentUserId, mergeSafetyState, submitModerationAction, submitSafetyRecord } from "./services/safety-service.js";
 import { canAccess, getSessionRole, requiredRoleForPath, setSessionRole } from "./utils/route-guards.js";
 import { roles } from "./types/models.js";
 
@@ -66,6 +67,8 @@ const reportReasons = [
   "Other",
 ];
 const prohibitedTextPattern = /\b(kill yourself|violent threat|racial slur|sexual exploitation|child sexual|terrorist threat|doxx|stalking threat)\b/i;
+
+hydrateSharedSafetyState();
 
 const routeMeta = {
   "/how-it-works": ["How Shootr Works", publicHowItWorks],
@@ -151,6 +154,18 @@ function redirectRoute(target) {
 
 function currentPath() {
   return window.location.pathname.replace(/\/index\.html$/, "").replace(/\/$/, "") || "/";
+}
+
+async function hydrateSharedSafetyState() {
+  try {
+    const state = await fetchSafetyState({ admin: currentPath().startsWith("/admin") });
+    if (mergeSafetyState(store, state)) {
+      saveStore(store);
+      if (root) render();
+    }
+  } catch (error) {
+    console.warn("Shared safety state unavailable; using local safety cache.", error);
+  }
 }
 
 function render() {
@@ -1547,16 +1562,17 @@ function visibleShootrs() {
 function acceptedCurrentTerms() {
   try {
     const acceptance = JSON.parse(localStorage.getItem(termsAcceptanceKey));
-    return acceptance?.version === termsVersion && acceptance?.acceptedAt;
+    if (acceptance?.version === termsVersion && acceptance?.acceptedAt) return true;
   } catch {
-    return false;
+    // Continue to shared cache check below.
   }
+  return (store.termsAcceptances || []).some((acceptance) => acceptance.userId === getCurrentUserId() && acceptance.version === termsVersion && acceptance.acceptedAt);
 }
 
 function acceptCurrentTerms(source = "auth") {
   const acceptance = {
     id: `terms-${Date.now()}`,
-    userId: "local-review-user",
+    userId: getCurrentUserId(),
     version: termsVersion,
     acceptedAt: new Date().toISOString(),
     source,
@@ -1566,6 +1582,7 @@ function acceptCurrentTerms(source = "auth") {
   store.termsAcceptances = store.termsAcceptances || [];
   store.termsAcceptances.push(acceptance);
   saveStore(store);
+  submitSafetyRecord("termsAcceptances", acceptance).catch((error) => console.warn("Shared terms acceptance failed.", error));
   return acceptance;
 }
 
@@ -1625,7 +1642,7 @@ function createReportRecord(data = {}) {
   if (duplicate) return duplicate;
   const report = {
     id: `report-${now}-${Math.random().toString(36).slice(2, 7)}`,
-    reporterUserId: "local-review-user",
+    reporterUserId: getCurrentUserId(),
     reportedUserId: data.reportedUserId || "",
     contentId: data.contentId || "",
     contentType: data.contentType || "User",
@@ -1639,12 +1656,14 @@ function createReportRecord(data = {}) {
   };
   store.reports = store.reports || [];
   store.reports.push(report);
-  createModerationSignal("report_created", {
+  const signal = createModerationSignal("report_created", {
     reportId: report.id,
     reportedUserId: report.reportedUserId,
     contentId: report.contentId,
     category: report.category,
   });
+  submitSafetyRecord("reports", report).catch((error) => console.warn("Shared report failed.", error));
+  submitSafetyRecord("moderationEvents", signal).catch((error) => console.warn("Shared moderation signal failed.", error));
   return report;
 }
 
@@ -1655,7 +1674,7 @@ function createBlockRecord({ blockedUserId, contentId = "", reason = "Blocked fr
   if (existing) return existing;
   const block = {
     id: `block-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
-    blockerUserId: "local-review-user",
+    blockerUserId: getCurrentUserId(),
     blockedUserId,
     contentId,
     reason,
@@ -1665,13 +1684,15 @@ function createBlockRecord({ blockedUserId, contentId = "", reason = "Blocked fr
     buildNumber: currentBuildNumber,
   };
   store.blocks.push(block);
-  createModerationSignal("user_blocked", {
+  const signal = createModerationSignal("user_blocked", {
     blockId: block.id,
     blockedUserId,
     contentId,
     reason,
     requiresDeveloperReviewWithinHours: 24,
   });
+  submitSafetyRecord("blocks", block).catch((error) => console.warn("Shared block failed.", error));
+  submitSafetyRecord("moderationEvents", signal).catch((error) => console.warn("Shared block signal failed.", error));
   return block;
 }
 
@@ -2019,7 +2040,7 @@ function bindViewActions(path) {
     render();
   });
 
-  document.querySelector("[data-support-form]")?.addEventListener("submit", (event) => {
+  document.querySelector("[data-support-form]")?.addEventListener("submit", async (event) => {
     event.preventDefault();
     const form = event.currentTarget;
     const data = Object.fromEntries(new FormData(form).entries());
@@ -2064,9 +2085,11 @@ function bindViewActions(path) {
     };
     store.incidents.push(supportCase);
     store.supportCases = store.supportCases || [];
-    store.supportCases.push({ ...supportCase, id: supportCase.id.replace("incident", "support") });
+    const sharedSupportCase = { ...supportCase, id: supportCase.id.replace("incident", "support") };
+    store.supportCases.push(sharedSupportCase);
+    let block = null;
     if (data.blockUser) {
-      createBlockRecord({
+      block = createBlockRecord({
         blockedUserId: data.reportedUserId,
         contentId: data.contentId,
         reason: data.category || data.topic,
@@ -2075,7 +2098,22 @@ function bindViewActions(path) {
     }
     track(store, "support_report_submitted", { topic: data.topic });
     saveStore(store);
-    if (note) note.textContent = data.blockUser ? "Report sent and user blocked. Their visible content is hidden from your app." : "Report sent. Shootr will review objectionable-content reports within 24 hours.";
+    if (note) note.textContent = "Sending report to Shootr moderation...";
+    const sharedWrites = [
+      submitSafetyRecord("reports", report),
+      submitSafetyRecord("incidents", supportCase),
+      submitSafetyRecord("supportCases", sharedSupportCase),
+      ...(block ? [submitSafetyRecord("blocks", block)] : []),
+    ];
+    const results = await Promise.allSettled(sharedWrites);
+    const failed = results.some((result) => result.status === "rejected");
+    if (note) {
+      note.textContent = failed
+        ? "Report saved on this device. Shared moderation sync will retry when the safety service is available."
+        : data.blockUser
+          ? "Report sent and user blocked. Their visible content is hidden from your app."
+          : "Report sent. Shootr will review objectionable-content reports within 24 hours.";
+    }
     form.reset();
   });
 
@@ -2098,7 +2136,7 @@ function bindViewActions(path) {
   });
 
   document.querySelectorAll("[data-moderation-action]").forEach((button) => {
-    button.addEventListener("click", () => {
+    button.addEventListener("click", async () => {
       const action = button.dataset.moderationAction;
       const reportId = button.dataset.reportId || "";
       const contentId = button.dataset.contentId || "";
@@ -2135,6 +2173,13 @@ function bindViewActions(path) {
         store.removedContent = (store.removedContent || []).map((item) => (item.contentId === contentId ? { ...item, status: "restored", restoredAt: actionRecord.createdAt } : item));
       }
       saveStore(store);
+      try {
+        await submitModerationAction(actionRecord);
+        await hydrateSharedSafetyState();
+      } catch (error) {
+        window.alert("This action was saved locally, but shared moderation sync failed. Check the admin key and safety backend before App Review.");
+        console.warn("Shared moderation action failed.", error);
+      }
       render();
     });
   });

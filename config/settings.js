@@ -9,9 +9,11 @@ const appEnvironment = env.VITE_SHOOTR_ENV || "local";
 const releaseLikeEnvironment = ["testflight", "production"].includes(appEnvironment);
 const demoModeOverride = env.VITE_SHOOTR_DEMO_MODE;
 const demoMode = demoModeOverride === "true" ? true : demoModeOverride === "false" ? false : !releaseLikeEnvironment;
+const safetyApiBaseUrl = env.VITE_SHOOTR_API_BASE_URL || "";
 
 export const settings = {
   appEnvironment,
+  safetyApiBaseUrl,
   marketplaceMode: MARKETPLACE_MODES.WAITLIST,
   demoMode,
   privateHomeImmediateRequestsEnabled: false,
