@@ -43,9 +43,9 @@ const setupOptions = ["Phone", "Pro Camera", "Both"];
 const transportationOptions = ["Car", "Rideshare", "Public transit", "Bike or scooter", "Other"];
 const availabilityOptions = ["Available on demand", "Weekdays", "Weekends", "Evenings", "Custom schedule"];
 const serviceOptions = [
+  ["No Preference", "Show me everyone nearby."],
   ["Phone", "Someone with a capable phone and a good eye."],
   ["Pro Camera", "An experienced photographer with professional equipment."],
-  ["No Preference", "Show me everyone nearby."],
 ];
 const noMatchOfferIncrements = settings.offerIncrements || [10, 25, 50];
 const applicationStateKey = "shootr-application-state";
@@ -71,7 +71,7 @@ const prohibitedTextPattern = /\b(kill yourself|violent threat|racial slur|sexua
 hydrateSharedSafetyState();
 
 const routeMeta = {
-  "/how-it-works": ["How Shootr Works", publicHowItWorks],
+  "/how-it-works": ["How Shootrs Works", publicHowItWorks],
   "/pricing": ["Simple Pricing", publicPricing],
   "/safety": ["Safety", publicSafety],
   "/help": ["Help", supportScreen],
@@ -87,7 +87,7 @@ const routeMeta = {
   "/sign-up": ["Sign Up", authScreen],
   "/forgot-password": ["Forgot Password", authScreen],
   "/verify": ["Verify", authScreen],
-  "/app": ["Shootr", customerHome],
+  "/app": ["Shootrs", customerHome],
   "/app/book": ["Book", requestWizard],
   "/app/search": ["Finding Someone", searchRoute],
   "/app/request": ["Book a Shootr", requestWizard],
@@ -176,7 +176,7 @@ function render() {
   }
 
   const [title, view] = resolveRoute(path);
-  document.title = `${title} | Shootr`;
+  document.title = `${title} | Shootrs`;
   const requiredRole = requiredRoleForPath(path);
 
   if (requiredRole && requiredRole !== roles.ADMIN && getSessionRole() !== requiredRole) {
@@ -189,7 +189,8 @@ function render() {
     return;
   }
 
-  const shellRole = requiredRole || "public";
+  const legalRoutes = ["/terms", "/privacy", "/community-standards", "/account-deletion", "/safety", "/help"];
+  const shellRole = requiredRole || (legalRoutes.includes(path) ? roles.SUBJECT : "public");
   root.innerHTML = shell(view(path), shellRole);
   bindGlobalActions();
   bindViewActions(path);
@@ -202,24 +203,24 @@ function resolveRoute(path) {
   if (/^\/app\/moments\/[^/]+$/.test(path)) return ["Moments", galleryDetailScreen];
   if (/^\/app\/jobs\/[^/]+\/deliver$/.test(path)) return ["Deliver Moments", shootrDeliver];
   if (/^\/app\/jobs\/[^/]+$/.test(path)) return ["Job Details", shootrJobDetails];
-  return ["Shootr", publicHowItWorks];
+  return ["Shootrs", publicHowItWorks];
 }
 
 function shell(body, role) {
   const isApp = role !== "public";
   return `
     <header class="site-header app-header">
-      <a class="brand" href="/" aria-label="Shootr home">
+      <a class="brand" href="/" aria-label="Shootrs home">
         <svg class="brand-symbol" viewBox="0 0 64 76" aria-hidden="true">
           <path d="M32 2C15.4 2 2 15.4 2 32c0 22 30 42 30 42s30-20 30-42C62 15.4 48.6 2 32 2Z" fill="currentColor"/>
           <circle cx="32" cy="31" r="19" fill="#FAFAFA"/>
           <path d="M32 10v10M32 42v10M11 31h10M43 31h10" stroke="#0D1B3D" stroke-width="4" stroke-linecap="round"/>
           <circle cx="32" cy="31" r="7" fill="currentColor"/>
         </svg>
-        <span class="brand-wordmark">shootr</span>
+        <span class="brand-wordmark">Shootrs</span>
       </a>
       <nav aria-label="Primary navigation">${navForRole(role)}</nav>
-      ${role === "public" ? `<a class="button small primary" href="/app">Open App</a>` : ""}
+      ${role === "public" ? `<a class="button small primary" href="/app">Open Shootrs</a>` : ""}
     </header>
     <main class="app-main ${isApp ? "mobile-surface" : ""}">${body}</main>
   `;
@@ -242,13 +243,13 @@ function internalAccessScreen(path) {
   const isInternal = path.startsWith("/admin") || path.startsWith("/internal");
   return `
     <section class="app-hero compact-app-hero">
-      <p class="eyebrow">Shootr</p>
+      <p class="eyebrow">Shootrs</p>
       <h1>${isInternal ? "Internal access required." : "Sign in to continue."}</h1>
       <p>${isInternal ? "This area is restricted." : "Use your phone number to continue."}</p>
     </section>
     <section class="app-panel compact-panel">
       <div class="button-column">
-        <a class="button primary" href="/app">Return to Shootr</a>
+        <a class="button primary" href="/app">Return to Shootrs</a>
       </div>
     </section>
   `;
@@ -272,16 +273,16 @@ function publicPricing() {
 }
 
 function publicSafety() {
-  return pageHero("Safety", "Built for location privacy, booking clarity, and private galleries.") + `
+  return pageHero("Safety", "Built for location privacy, clear reports, and private galleries.") + `
     <section class="app-grid three">
-      ${card("Phone verification", "Prepared", "Phone verification is primary before live bookings.")}
+      ${card("Account details", "Required before booking", "Clients provide contact details before a booking can be confirmed.")}
       ${card("Location privacy", "Approximate first", "Exact private-home addresses stay hidden until confirmation.")}
       ${card("Moments", "Private by default", "Portfolio and marketing permissions default to off.")}
-      ${card("Reports", "In every booking", "Report, block, support, check-in, and check-out are part of the flow.")}
-      ${card("Moderation", "Required", "Profiles, reviews, messages, and gallery reports must be reviewed before repeat abuse continues.")}
+      ${card("Reports", "Always available", "Report and block controls are available from Help, profiles, bookings, and galleries.")}
+      ${card("Moderation", "Reviewed", "Reports are sent to Shootrs moderation for review and action.")}
       ${card("Privacy controls", "In Profile", "Delete account, privacy policy, support, and data-use notices stay reachable from the app.")}
-      ${card("Minors", "Guardian required", "Minors cannot independently book or become Shootrs in version 1.")}
-      ${card("Legal review", "Required", "Terms, privacy, consent, cancellation, payout, and safety language require attorney review before launch.")}
+      ${card("Minors", "Adult required", "Bookings involving minors require an authorized adult to be present.")}
+      ${card("Legal and privacy", "Available", "Terms, privacy, consent, cancellation, payout, and safety information stay reachable from the app.")}
     </section>`;
 }
 
@@ -302,7 +303,7 @@ function publicProfile() {
       <p class="eyebrow">${isFeatureEnabled("DEMO_MODE") ? "Demo profile" : "Public profile"}</p>
       <div class="portfolio-large">${shootr.portfolio.map((src) => `<img src="/${src}" alt="${shootr.displayName} sample" />`).join("")}</div>
       <div class="badge-row">${shootr.badges.map((badge) => `<span>${badge}</span>`).join("")}</div>
-      <a class="button primary" href="/app/request">Open Shootr</a>
+      <a class="button primary" href="/app/request">Open Shootrs</a>
       <div class="safety-actions">
         <a href="/app/support?topic=report&reportedUserId=${encodeURIComponent(shootr.id)}&contentId=${encodeURIComponent(contentIdFor("profile", shootr.id))}&contentType=Profile">Report Profile</a>
         <button type="button" data-block-user="${shootr.id}" data-block-content="${contentIdFor("profile", shootr.id)}" data-block-context="public-profile">Block User</button>
@@ -358,8 +359,10 @@ function availabilityControl(availability) {
 function requestWizard() {
   const params = new URLSearchParams(window.location.search);
   const timing = normalizeTiming(params.get("timing"));
-  const draft = timing ? saveDraft({ timing, step: 1 }) : loadDraft();
-  const step = Number(params.get("step") || 1);
+  const explicitStep = params.get("step");
+  const initialStep = timing === "Later" && !explicitStep ? 2 : 1;
+  const draft = timing ? saveDraft({ timing, step: Number(explicitStep || initialStep) }) : loadDraft();
+  const step = Number(explicitStep || draft.step || initialStep);
   const clamped = Math.max(1, Math.min(step, 9));
   const views = {
     1: locationScreen,
@@ -372,7 +375,14 @@ function requestWizard() {
     8: identityScreen,
     9: confirmScreen,
   };
-  return `<section class="app-screen request-screen">${views[clamped](draft)}</section>${bottomNav("customer")}`;
+  return `<section class="app-screen request-screen">${bookingBackBar(clamped, draft)}${views[clamped](draft)}</section>${bottomNav("customer")}`;
+}
+
+function bookingBackBar(step, draft) {
+  if (step <= 1) return appBackBar("/app", "Home");
+  const previous = step === 3 && draft.timing === "Now" ? 1 : step - 1;
+  const timing = draft.timing ? `&timing=${String(draft.timing).toLowerCase()}` : "";
+  return appBackBar(`/app/book?step=${previous}${timing}`, "Back");
 }
 
 function locationScreen(draft) {
@@ -388,11 +398,9 @@ function locationScreen(draft) {
     <button class="button primary" data-use-location>Use Current Location</button>
     <div class="fallback-grid">
       <label>Search Address<input data-address-input autocomplete="street-address" value="${draft.formattedAddress || ""}" placeholder="Street, venue, or neighborhood" /></label>
+      <button class="button secondary" data-save-address>Continue with Address</button>
       <button class="button secondary" data-save-location="Choose on Map">Choose on Map</button>
       <button class="button secondary" data-save-location="Recent Places">Recent Places</button>
-    </div>
-    <div class="filter-row">
-      ${["Current location", "Public location", "Business", "Venue", "Private residence"].map((item) => `<button class="filter-chip ${draft.locationKind === item ? "selected" : ""}" data-location-kind="${item}">${item}</button>`).join("")}
     </div>
     <p class="form-note">Shootrs see only an approximate area before booking is confirmed.</p>`;
 }
@@ -408,7 +416,8 @@ function timingScreen(draft) {
     <div class="form-row" ${isLater ? "" : "hidden"}>
       <label>Date<input data-schedule-date type="date" value="${draft.scheduleDate || ""}" /></label>
       <label>Time<input data-schedule-time type="time" value="${draft.scheduleTime || ""}" /></label>
-    </div>`;
+    </div>
+    ${isLater ? `<button class="button primary" data-next-step="3">Continue</button>` : ""}`;
 }
 
 function serviceScreen(draft) {
@@ -444,7 +453,7 @@ function searchScreen() {
   return `
     ${progressHeader("Nearby Shootrs", 5)}
     <div class="searching-state">
-      ${FocusLoadingIndicator()}
+      <div class="real-search-indicator" aria-hidden="true"></div>
       <h1>Check nearby Shootrs.</h1>
       <p data-search-status>Search your area when you’re ready.</p>
       <div class="summary-card">
@@ -452,7 +461,7 @@ function searchScreen() {
         <span>Search radius: ${draft.travelMiles || 4} miles</span>
       </div>
       <div class="button-column">
-        <a class="button primary" href="/app/matches">See nearby Shootrs</a>
+        <button class="button primary" data-run-search>See nearby Shootrs</button>
         <button class="button secondary" data-expand-radius>Expand radius</button>
         <a class="button secondary" href="/app/book?timing=later" data-start-booking="later">Later</a>
         <a class="button ghost" href="/app">Cancel search</a>
@@ -481,7 +490,7 @@ function matchesScreen() {
       ${progressHeader("Nearby Shootrs", 6)}
       <h1>Nearby Shootrs</h1>
       <div class="filter-row">
-        ${["No Preference", "Phone", "Pro Camera"].map((item) => `<button class="filter-chip ${filter === item ? "selected" : ""}" data-preference="${item}">${item}</button>`).join("")}
+        ${["No Preference", "Phone", "Pro Camera"].map((item) => `<button class="filter-chip preference-chip ${filter === item ? "selected" : ""}" data-preference="${item}">${item}</button>`).join("")}
       </div>
       ${matches.length ? `<div class="nearby-list">${matches.map(({ shootr }) => matchCard(shootr)).join("")}</div>` : noMatchPanel()}
     </section>
@@ -546,7 +555,7 @@ function confirmScreen(draft) {
       <h2>Before you book</h2>
       <label class="check-row"><input type="checkbox" data-adult-consent ${draft.adultConsent ? "checked" : ""} /> <span>I am at least 18. If minors are present, an authorized adult will be there for the shoot.</span></label>
       <label class="check-row"><input type="checkbox" data-rights-ack ${draft.rightsAcknowledged ? "checked" : ""} /> <span>I understand galleries are private by default and portfolio or marketing use requires separate consent.</span></label>
-      <p class="form-note">Cancellation terms: no charge if no Shootr accepts. Refund and dispute handling must follow the posted terms before launch.</p>
+      <p class="form-note">Cancellation terms: no charge if no Shootr accepts. Refund and dispute handling follow the posted terms.</p>
       <p class="form-note" id="confirmNote" role="status"></p>
     </section>
     <div class="review-cta-card">
@@ -559,13 +568,15 @@ function confirmScreen(draft) {
 }
 
 function noMatchPanel() {
+  const miles = loadDraft().travelMiles || 4;
   return `
     <section class="app-panel no-match">
       <h2>No Shootrs are available nearby right now.</h2>
+      <p data-search-status>Search radius: ${miles} miles</p>
+      <div class="real-search-indicator" aria-hidden="true"></div>
       <div class="button-column">
-        <button class="button primary" data-expand-radius>Expand search area</button>
+        ${miles >= 20 ? `<button class="button primary" disabled>Maximum search area reached</button>` : `<button class="button primary" data-expand-radius>Expand search area</button>`}
         <a class="button secondary" href="/app/book?timing=later" data-start-booking="later">Later</a>
-        ${noMatchOfferIncrements.map((amount) => `<button class="button secondary" data-increase-offer="${amount}">Increase offer by $${amount}</button>`).join("")}
         <button class="button secondary" data-availability-alert>Notify me when someone is nearby</button>
         <a class="button ghost" href="/app">Cancel request</a>
       </div>
@@ -692,19 +703,11 @@ function galleryDetailScreen() {
     <section class="app-panel">
       <div class="portfolio-large">${items.map((item) => `<figure><img src="/${item.thumbnailUrl}" alt="Gallery thumbnail" /><figcaption><a href="/app/support?topic=gallery&contentId=${encodeURIComponent(item.id)}&reportedUserId=${encodeURIComponent(gallery.shootrId)}&contentType=Delivered%20image">Report photo</a></figcaption></figure>`).join("")}</div>
       <div class="button-row">
-        <button class="button secondary">View</button>
-        <button class="button secondary">Favorite</button>
-        <button class="button secondary">Download</button>
-        <button class="button secondary">Download All</button>
-        <button class="button secondary">Save to Photos</button>
-        <button class="button secondary">Share Private Link</button>
-        <button class="button secondary">Tip</button>
-        <button class="button secondary">Review</button>
-        <button class="button secondary">Book Again</button>
+        <a class="button secondary" href="/app/book">Book Again</a>
         <a class="button secondary" href="/app/support?topic=gallery&reportedUserId=${encodeURIComponent(gallery.shootrId)}&contentType=Delivered%20image">Report an Issue</a>
         <button class="button secondary" data-block-user="${gallery.shootrId}" data-block-content="${items[0].id}" data-block-context="gallery">Block User</button>
       </div>
-      <p class="form-note">Private link active: ${isShareLinkExpired(link) ? "no" : "yes"}.</p>
+      <p class="form-note" id="galleryNote" role="status">Private link active: ${isShareLinkExpired(link) ? "no" : "yes"}.</p>
     </section>
     ${bottomNav("customer")}`;
 }
@@ -724,25 +727,25 @@ function profileScreen() {
           <p>Member since 2026</p>
         </div>
       </article>
-      <div class="profile-card"><h2>Account</h2><div class="settings-list profile-row-list">${["Profile photo", "Name", "Mobile number", "Email", "Payment methods"].map((item) => `<a href="#">${item}</a>`).join("")}</div></div>
+      <div class="profile-card"><h2>Account</h2><div class="detail-grid"><span><strong>Name</strong>${getProfileName()}</span><span><strong>Contact</strong>Added during booking</span><span><strong>Profile photo</strong>Initials</span></div></div>
       ${shootrBlock}
-      <div class="profile-card"><h2>Invite</h2><div class="invite-option"><div><strong>Invite Friends</strong><p>Share Shootr with someone who should be in the picture.</p></div><button class="button secondary" data-referral="friend">Share</button></div><div class="invite-option"><div><strong>Refer a Shootr</strong><p>Know a great Shootr?</p></div><button class="button secondary" data-referral="shootr">Invite</button></div><p class="form-note" id="referralNote"></p></div>
+      <div class="profile-card"><h2>Invite</h2><div class="invite-option"><div><strong>Invite Friends</strong><p>Share Shootrs with someone who should be in the picture.</p></div><button class="button secondary" data-referral="friend">Share</button></div><div class="invite-option"><div><strong>Refer a Shootr</strong><p>Know a great Shootr?</p></div><button class="button secondary" data-referral="shootr">Invite</button></div><p class="form-note" id="referralNote"></p></div>
       <div class="profile-card"><h2>Preferences</h2><div class="settings-list profile-row-list"><a href="/privacy">Privacy</a><a href="/app/support?topic=notifications">Notifications</a><a href="/app/support?topic=location">Location</a><a href="/app/support?topic=appearance">Appearance</a></div></div>
       <div class="profile-card"><h2>Support</h2><div class="settings-list profile-row-list"><a href="/app/support">Help</a><a href="/safety">Safety</a><a href="/app/support?topic=block">Blocked Accounts</a><a href="/app/support?topic=contact">Contact Support</a><a href="/app/support?topic=report">Report Content or User</a></div></div>
-      <div class="profile-card legal-card"><h2>Legal</h2><div class="settings-list profile-row-list"><a href="/terms">Terms</a><a href="/privacy">Privacy</a><a href="/community-standards">Community Standards</a><a href="/account-deletion">Account Deletion Policy</a><a class="destructive-row" href="/app/profile/delete-account">Delete Account</a></div><p class="form-note">Account deletion is available in-app. Production must delete or anonymize personal data and explain any legally retained payment, tax, safety, or dispute records.</p></div>
+      <div class="profile-card legal-card"><h2>Legal</h2><div class="settings-list profile-row-list"><a href="/terms">Terms</a><a href="/privacy">Privacy</a><a href="/community-standards">Community Standards</a><a href="/account-deletion">Account Deletion Policy</a><a class="destructive-row" href="/app/profile/delete-account">Delete Account</a></div><p class="form-note">Account deletion is available in-app. Some payment, tax, safety, or dispute records may be retained where required.</p></div>
     </section>${bottomNav("customer")}`;
 }
 
 function deleteAccountScreen() {
-  return pageHero("Delete Account", "This permanently removes your Shootr account where allowed.") + `
+  return pageHero("Delete Account", "This permanently removes your Shootrs account where allowed.") + `
     <section class="app-screen">
       <form class="app-panel deletion-flow" data-delete-account-form>
         <h2>What happens</h2>
         <ul class="plain-list">
           <li>Profile, contact details, local drafts, saved preferences, and availability settings are removed from this device.</li>
-          <li>Private gallery share links are revoked in this prototype store.</li>
-          <li>Active bookings, payment disputes, safety reports, tax, payout, fraud, and legal records may need limited retention in production.</li>
-          <li>If Sign in with Apple is enabled, production must revoke associated tokens server-side.</li>
+          <li>Private gallery share links are revoked where possible.</li>
+          <li>Active bookings, payment disputes, safety reports, tax, payout, fraud, and legal records may need limited retention where required.</li>
+          <li>If you signed in with Apple, associated account tokens are revoked where required.</li>
         </ul>
         <label>Type DELETE to continue<input name="confirmation" autocomplete="off" required /></label>
         <div class="button-column">
@@ -794,44 +797,102 @@ function shootrProfileBlock(state, approved) {
 
 function supportScreen() {
   const params = new URLSearchParams(window.location.search);
-  const topic = params.get("topic") || "support";
+  const topic = params.get("topic") || "";
   const reportedUserId = params.get("reportedUserId") || "";
   const contentId = params.get("contentId") || "";
   const contentType = params.get("contentType") || "User";
-  return pageHero("Help", "Report, block, or get help with a booking.") + `
+  const contact = params.get("contact") || "";
+  const isBlockFlow = topic.toLowerCase().includes("block");
+  const supportHero = pageHero("Help", "Report, block, or get help with a booking.");
+  if (isBlockFlow) {
+    return supportHero + `
+      <section class="app-screen">
+        ${appBackBar("/app/support", "Help")}
+        <form id="blockForm" class="app-panel support-form" data-block-form>
+          <h2>Block contact</h2>
+          <p>Blocking hides this person's visible content from your app and sends a moderation signal to Shootrs.</p>
+          <label>User or Shootr ID<input name="reportedUserId" value="${reportedUserId}" placeholder="User or Shootr ID" required /></label>
+          <label>Content ID<input name="contentId" value="${contentId}" placeholder="Optional content ID" /></label>
+          <input type="hidden" name="contentType" value="${contentType}" />
+          <label>Reason
+            <select name="category">
+              ${["Harassment or abusive behavior", "Spam or scam", "Privacy violation", "Impersonation", "Other"].map((item) => `<option>${item}</option>`).join("")}
+            </select>
+          </label>
+          <label class="check-row"><input type="checkbox" name="confirmBlock" required /> <span>I want to block this person.</span></label>
+          <button class="button danger" type="submit">Block User</button>
+          <p class="form-note" id="blockNote" role="status"></p>
+        </form>
+      </section>${bottomNav("customer")}`;
+  }
+
+  if (topic.toLowerCase().includes("report") || topic.toLowerCase().includes("gallery")) {
+    return supportHero + `
+      <section class="app-screen">
+        ${appBackBar("/app/support", "Help")}
+        <form id="reportForm" class="app-panel support-form" data-report-form>
+          <h2>Report a problem</h2>
+          <p>Reports go to Shootrs moderation for review. Objectionable-content reports are reviewed within 24 hours.</p>
+          <label>What are you reporting?
+            <select name="contentType">
+              ${["User", "Profile", "Portfolio image", "Delivered image", "Booking", "Message", "Review", "Payment", "Other"].map((item) => `<option ${contentType === item ? "selected" : ""}>${item}</option>`).join("")}
+            </select>
+          </label>
+          <label>Reason
+            <select name="category">
+              ${reportReasons.map((item) => `<option>${item}</option>`).join("")}
+            </select>
+          </label>
+          <label>Reported user ID<input name="reportedUserId" value="${reportedUserId}" placeholder="User or Shootr ID if known" /></label>
+          <label>Content ID<input name="contentId" value="${contentId}" placeholder="Content ID if shown" /></label>
+          <label>Details<textarea name="details"></textarea></label>
+          <label>Email or phone for follow-up<input name="contact" autocomplete="email" value="${contact}" required /></label>
+          <label class="check-row"><input type="checkbox" name="urgentSafety" /> <span>This is a safety issue.</span></label>
+          <label class="check-row"><input type="checkbox" name="confirmReport" required /> <span>I confirm this report should be sent to Shootrs moderation.</span></label>
+          <button class="button primary" type="submit">Submit Report</button>
+          <p class="form-note">For immediate danger, contact local emergency services first.</p>
+          <p class="form-note" id="reportNote" role="status"></p>
+        </form>
+      </section>${bottomNav("customer")}`;
+  }
+
+  if (topic && ["contact", "notifications", "location", "appearance", "payment", "refund", "support"].some((item) => topic.toLowerCase().includes(item))) {
+    return supportHero + `
+      <section class="app-screen">
+        ${appBackBar("/app/support", "Help")}
+        <form class="app-panel support-form" data-contact-support-form>
+          <h2>Contact support</h2>
+          <label>Topic<input name="topic" value="${humanize(topic)}" placeholder="What do you need help with?" required /></label>
+          <label>Details<textarea name="details" required></textarea></label>
+          <label>Email or phone for follow-up<input name="contact" autocomplete="email" required /></label>
+          <button class="button primary" type="submit">Send Message</button>
+          <p class="form-note" id="contactSupportNote" role="status"></p>
+        </form>
+      </section>${bottomNav("customer")}`;
+  }
+
+  return supportHero + `
     <section class="app-screen">
-      <div class="app-grid three">
-        ${card("Report a problem", "Safety", "Tell us what happened so support can review it.")}
-        ${card("Block contact", "Privacy", "Block future contact and send the case to support.")}
+      <div class="app-grid three support-action-grid">
+        <a class="app-card support-action-card report-action-card" href="/app/support?topic=report" aria-label="Report a problem">
+          <h3>Report a problem</h3>
+          <strong>Report</strong>
+          <p>Open the report form and send it to Shootrs moderation.</p>
+          <span class="button primary">Start Report</span>
+        </a>
+        <a class="app-card support-action-card block-action-card" href="/app/support?topic=block" aria-label="Block contact">
+          <h3>Block contact</h3>
+          <strong>Block</strong>
+          <p>Block someone from contacting you and notify moderation.</p>
+          <span class="button primary">Start Block</span>
+        </a>
         ${card("Private galleries", "Control", "Report unauthorized, unsafe, or unwanted media.")}
       </div>
-      <form class="app-panel support-form" data-support-form>
-        <label>Action
-          <select name="topic">
-            ${["Report content or user", "Block contact", "Booking safety", "Payment or refund", "Privacy or deletion", "Location issue", "Other"].map((item) => `<option ${topic.toLowerCase().includes(item.toLowerCase().split(" ")[0]) ? "selected" : ""}>${item}</option>`).join("")}
-          </select>
-        </label>
-        <label>What are you reporting?
-          <select name="contentType">
-            ${["User", "Profile", "Portfolio image", "Delivered image", "Booking", "Message", "Review", "Payment", "Other"].map((item) => `<option ${contentType === item ? "selected" : ""}>${item}</option>`).join("")}
-          </select>
-        </label>
-        <label>Reason
-          <select name="category">
-            ${reportReasons.map((item) => `<option>${item}</option>`).join("")}
-          </select>
-        </label>
-        <label>Reported user ID<input name="reportedUserId" value="${reportedUserId}" placeholder="User or Shootr ID if known" /></label>
-        <label>Content ID<input name="contentId" value="${contentId}" placeholder="Content ID if shown" /></label>
-        <label>Optional comment<textarea name="details"></textarea></label>
-        <label>Email or phone for follow-up<input name="contact" autocomplete="email" required /></label>
-        <label class="check-row"><input type="checkbox" name="blockUser" /> <span>Block this person from contacting me again where possible.</span></label>
-        <label class="check-row"><input type="checkbox" name="urgentSafety" /> <span>This is a safety issue.</span></label>
-        <label class="check-row"><input type="checkbox" name="confirmReport" required /> <span>I confirm this report should be sent to Shootr for moderation review.</span></label>
-        <button class="button primary" type="submit">Send to Support</button>
-        <p class="form-note">For immediate danger, contact local emergency services first. Reports are timestamped and visible to moderation. Shootr reviews objectionable-content reports within 24 hours.</p>
-        <p class="form-note" id="supportNote" role="status"></p>
-      </form>
+      <section class="app-panel support-form">
+        <h2>Need something else?</h2>
+        <p>Send a message to Shootrs support.</p>
+        <a class="button primary" href="/app/support?topic=contact">Contact Support</a>
+      </section>
     </section>${bottomNav("customer")}`;
 }
 
@@ -864,9 +925,9 @@ function shootrApplicationStep(step, draft) {
         <p>Get paid.</p>
         <section class="eula-gate">
           <h2>Before you apply</h2>
-          <p>Agree to the Terms/EULA and Community Standards before creating or continuing a Shootr profile. Shootr has zero tolerance for objectionable content and abusive users.</p>
+          <p>Agree to the Terms/EULA and Community Standards before creating or continuing a Shootr profile. Shootrs has zero tolerance for objectionable content and abusive users.</p>
           <div class="button-row"><a class="button secondary" href="/terms">Open Terms</a><a class="button secondary" href="/community-standards">Community Standards</a></div>
-          <label class="check-row"><input type="checkbox" data-accept-terms ${hasAccepted ? "checked" : ""} /> <span>I agree to the Shootr Terms/EULA and Community Standards. Version ${termsVersion}.</span></label>
+          <label class="check-row"><input type="checkbox" data-accept-terms ${hasAccepted ? "checked" : ""} /> <span>I agree to the Shootrs Terms/EULA and Community Standards. Version ${termsVersion}.</span></label>
           <p class="form-note" id="shootrStartNote" role="status"></p>
         </section>
         <div class="button-column">
@@ -1012,7 +1073,7 @@ function shootrRequests() {
   return pageHero("Jobs", "New jobs nearby.") + `
     <section class="app-panel">
       ${requestCard(demoBooking, true)}
-      <div class="button-row"><button class="button primary" data-accept-booking="demo-booking">Lock it in</button><button class="button secondary">Pass</button></div>
+      <div class="button-row"><button class="button primary" data-accept-booking="demo-booking">Lock it in</button><button class="button secondary" data-unavailable="Passing on jobs is not available in this release.">Pass</button></div>
       <p id="acceptNote" class="form-note"></p>
     </section>
     ${bottomNav("customer")}`;
@@ -1028,7 +1089,7 @@ function shootrJobs() {
 function shootrJobDetails() {
   const booking = bookingForCurrentPath();
   if (!booking) return pageHero("Job", "This job is not available.") + emptyState("Job unavailable", "No live job was found for this route.") + bottomNav("customer");
-  return pageHero("Job", "Follow each step in order.") + `<section class="app-panel"><h2>Next action</h2><div class="button-column"><button class="button secondary">Navigate</button><button class="button secondary" data-transition="shootr_en_route" data-transition-booking="${booking.id}">On the move</button><button class="button secondary" data-transition="shootr_arrived" data-transition-booking="${booking.id}">Nearby</button><button class="button secondary" data-transition="in_progress" data-transition-booking="${booking.id}">Start</button><button class="button secondary" data-transition="awaiting_upload" data-transition-booking="${booking.id}">Finish</button><a class="button primary" href="/app/jobs/${booking.id}/deliver">Deliver moments</a></div><div class="button-row"><a class="button secondary" href="/app/support?topic=booking">Report a problem</a><a class="button secondary" href="/app/support?topic=safety">Safety</a><a class="button secondary" href="/app/support">Help</a></div><p id="transitionNote" class="form-note"></p></section>${bottomNav("customer")}`;
+  return pageHero("Job", "Follow each step in order.") + `<section class="app-panel"><h2>Next action</h2><div class="button-column"><button class="button secondary" data-unavailable="Turn-by-turn navigation is not available in this release.">Navigate</button><button class="button secondary" data-transition="shootr_en_route" data-transition-booking="${booking.id}">On the move</button><button class="button secondary" data-transition="shootr_arrived" data-transition-booking="${booking.id}">Nearby</button><button class="button secondary" data-transition="in_progress" data-transition-booking="${booking.id}">Start</button><button class="button secondary" data-transition="awaiting_upload" data-transition-booking="${booking.id}">Finish</button><a class="button primary" href="/app/jobs/${booking.id}/deliver">Deliver moments</a></div><div class="button-row"><a class="button secondary" href="/app/support?topic=booking">Report a problem</a><a class="button secondary" href="/app/support?topic=safety">Safety</a><a class="button secondary" href="/app/support">Help</a></div><p id="transitionNote" class="form-note"></p></section>${bottomNav("customer")}`;
 }
 
 function shootrDeliver() {
@@ -1040,11 +1101,11 @@ function shootrDeliver() {
     <section class="app-panel">
       <label>Choose photos<input type="file" accept="image/heic,image/jpeg,image/png,image/*" multiple /></label>
       <div class="choice-grid">
-        <button class="choice-card selected"><strong>Instant Drop</strong><span>Selected photos delivered quickly with little or no editing.</span></button>
-        <button class="choice-card"><strong>Finished Gallery</strong><span>Curated and edited photos delivered by the booking deadline.</span></button>
+        <button class="choice-card selected" data-unavailable="Instant Drop is the only delivery option available in this release."><strong>Instant Drop</strong><span>Selected photos delivered quickly with little or no editing.</span></button>
+        <button class="choice-card" data-unavailable="Finished Gallery delivery is not available in this release."><strong>Finished Gallery</strong><span>Curated and edited photos delivered by the booking deadline.</span></button>
       </div>
-      <div class="button-row"><button class="button primary">Upload directly to private storage</button><button class="button secondary">Pause</button><button class="button secondary">Retry</button></div>
-      <p class="form-note">${retried.items.length ? `Upload prepared. Retry count: ${retried.items[0].retries}.` : "Choose photos to prepare an upload."} Do not delete originals before delivery is complete.</p>
+      <div class="button-row"><button class="button primary" data-unavailable="Private storage upload is not available in this release.">Upload directly to private storage</button><button class="button secondary" data-unavailable="Upload pause is not available in this release.">Pause</button><button class="button secondary" data-unavailable="Upload retry is not available in this release.">Retry</button></div>
+      <p class="form-note" id="deliveryNote" role="status">${retried.items.length ? `Upload prepared. Retry count: ${retried.items[0].retries}.` : "Choose photos to prepare an upload."} Do not delete originals before delivery is complete.</p>
     </section>
     ${bottomNav("customer")}`;
 }
@@ -1089,7 +1150,8 @@ function payoutsScreen() {
   return pageHero("Payouts", "Manage how you get paid.") + `
     <section class="app-panel">
       <p>Payout setup happens through a secure payout provider. Shootr does not store raw bank details in this form.</p>
-      <div class="settings-list">${["Legal identity", "Tax information", "Bank or debit account", "Payout preference"].map((item) => `<a href="#">${item}</a>`).join("")}</div>
+      <div class="settings-list">${["Legal identity", "Tax information", "Bank or debit account", "Payout preference"].map((item) => `<button type="button" data-unavailable="${item} setup is not available in this release.">${item}</button>`).join("")}</div>
+      <p class="form-note" id="payoutNote" role="status"></p>
     </section>${bottomNav("customer")}`;
 }
 
@@ -1200,66 +1262,67 @@ function authScreen(path) {
     <section class="app-panel">
       <div class="eula-gate">
         <h2>Terms/EULA</h2>
-        <p>Before you continue, agree to Shootr's Terms/EULA and Community Standards. Shootr has zero tolerance for objectionable content, abusive users, harassment, hate, threats, sexually exploitative content, illegal activity, impersonation, privacy violations, spam, or scams.</p>
-        <p>Users may report content or users, block abusive users, and Shootr may remove content, suspend accounts, terminate accounts, and investigate reports. Objectionable-content reports are reviewed within 24 hours.</p>
+        <p>Before you continue, agree to the Shootrs Terms/EULA and Community Standards. Shootrs has zero tolerance for objectionable content, abusive users, harassment, hate, threats, sexually exploitative content, illegal activity, impersonation, privacy violations, spam, or scams.</p>
+        <p>Users may report content or users, block abusive users, and Shootrs may remove content, suspend accounts, terminate accounts, and investigate reports. Objectionable-content reports are reviewed within 24 hours.</p>
         <div class="button-row"><a class="button secondary" href="/terms">Open Terms</a><a class="button secondary" href="/community-standards">Community Standards</a><a class="button secondary" href="/privacy">Privacy</a></div>
-        <label class="check-row"><input type="checkbox" data-accept-terms ${hasAccepted ? "checked" : ""} /> <span>I agree to the Shootr Terms/EULA, Community Standards, and Privacy Policy. Version ${termsVersion}.</span></label>
+        <label class="check-row"><input type="checkbox" data-accept-terms ${hasAccepted ? "checked" : ""} /> <span>I agree to the Shootrs Terms/EULA, Community Standards, and Privacy Policy. Version ${termsVersion}.</span></label>
       </div>
       <div class="button-column">
-        <button class="button primary" data-auth-provider="apple">Continue with Apple</button>
-        <button class="button secondary" data-auth-provider="google">Continue with Google</button>
-        <label>Phone<input type="tel" inputmode="tel" autocomplete="tel" /></label>
-        <button class="button secondary" data-auth-provider="phone">Continue with Phone</button>
+        <button class="button primary" data-auth-provider="local">Continue</button>
       </div>
       <p class="form-note" id="authNote" role="status"></p>
-      <p class="form-note">If third-party or social login is enabled in the iOS app, Sign in with Apple must be available with equivalent prominence. Production must support session revocation and account deletion.</p>
+      <p class="form-note">You can delete your account from Profile at any time.</p>
     </section>`;
 }
 
 function legalPage(path) {
   if (path.includes("privacy")) {
-    return pageHero("Privacy Policy", "Plain-language draft for review.") + `
+    return appBackBar("/app/profile", "Profile") + pageHero("Privacy Policy", "How Shootrs uses data to run the app.") + `
       <section class="app-screen legal-copy">
-        ${card("Data used to run Shootr", "App functionality", "Name, email, phone, approximate location, booking details, messages, support reports, reviews, and private gallery media may be needed to provide the service.")}
-        ${card("Location", "Contextual", "Shootr should request location only when the user tries to find nearby Shootrs. Manual address search must remain available if permission is denied.")}
+        ${card("Data used to run Shootrs", "App functionality", "Name, email, phone, approximate location, booking details, messages, support reports, reviews, and private gallery media may be needed to provide the service.")}
+        ${card("Location", "Contextual", "Shootrs requests location only when you try to find nearby Shootrs. Manual address search remains available if permission is denied.")}
         ${card("Photos", "User controlled", "Photo-library access should be requested only when uploading, saving, or delivering moments. Galleries are private by default.")}
-        ${card("Payments", "Real-world services", "Card and payout details should be handled by payment providers. Shootr should not store raw card or bank information.")}
+        ${card("Payments", "Real-world services", "Card and payout details should be handled by payment providers. Shootrs should not store raw card or bank information.")}
         ${card("Tracking", "Off by default", "Do not track users across apps or websites unless App Tracking Transparency consent and App Store privacy disclosures are complete.")}
-        ${card("Deletion", "In app", "Users can request deletion from Profile. Production must delete or anonymize personal data unless retention is required for payment, tax, fraud, safety, or legal reasons.")}
+        ${card("Deletion", "In app", "Users can request deletion from Profile. Shootrs deletes or anonymizes personal data unless retention is required for payment, tax, fraud, safety, or legal reasons.")}
       </section>`;
   }
   if (path.includes("community-standards")) {
-    return pageHero("Community Standards", "Required before public launch.") + `
+    return appBackBar("/app/profile", "Profile") + pageHero("Community Standards", "Safety rules for everyone using Shootrs.") + `
       <section class="app-screen legal-copy">
         ${card("Respect and consent", "Required", "Do not upload or share unauthorized private photos. Minors require guardian involvement.")}
         ${card("Zero tolerance", "Required", "Objectionable content, abusive users, harassment, hate, threats, sexually exploitative content, illegal activity, impersonation, privacy violations, spam, and scams are not allowed.")}
-        ${card("Report and block", "Available", "Users can report content or users, block abusive users, and contact Shootr from inside the app. Blocking immediately hides that user's visible content from the blocker.")}
-        ${card("24-hour review", "Moderation", "Shootr reviews objectionable-content reports within 24 hours and may remove content, limit sharing, suspend accounts, terminate accounts, cancel bookings, or escalate safety issues.")}
+        ${card("Report and block", "Available", "Users can report content or users, block abusive users, and contact Shootrs from inside the app. Blocking immediately hides that user's visible content from the blocker.")}
+        ${card("24-hour review", "Moderation", "Shootrs reviews objectionable-content reports within 24 hours and may remove content, limit sharing, suspend accounts, terminate accounts, cancel bookings, or escalate safety issues.")}
       </section>`;
   }
   if (path.includes("account-deletion")) {
-    return pageHero("Account Deletion Policy", "Required for App Store readiness.") + `
+    return appBackBar("/app/profile", "Profile") + pageHero("Account Deletion Policy", "How account deletion works.") + `
       <section class="app-screen legal-copy">
         ${card("In-app deletion", "Profile", "Delete Account is available from Profile > Legal.")}
         ${card("What gets deleted", "Personal data", "Profile, contact details, device-local drafts, preferences, and non-retained media should be deleted or anonymized.")}
         ${card("What may be retained", "Limited records", "Payment, payout, tax, dispute, fraud, safety, and legal records may be retained only as necessary and disclosed in policy.")}
-        ${card("Sign in with Apple", "Token revocation", "If Apple login is used, production must revoke associated tokens during account deletion when required.")}
+        ${card("Sign in with Apple", "Token revocation", "If Apple login is used, Shootrs revokes associated tokens during account deletion when required.")}
       </section>`;
   }
-  return pageHero("Terms of Service / EULA", `Version ${termsVersion}. Draft for legal review.`) + `
+  return appBackBar("/app/profile", "Profile") + pageHero("Terms of Service / EULA", `Version ${termsVersion}.`) + `
     <section class="app-screen legal-copy">
-      ${card("Real-world services", "Shootr bookings", "Shootr connects customers with people who capture photos or video in person.")}
+      ${card("Real-world services", "Shootrs bookings", "Shootrs connects customers with people who capture photos or video in person.")}
       ${card("Payments and refunds", "Disclosed before booking", "Final price, cancellation rules, refunds, tips, and platform fees must be clear before payment.")}
       ${card("User content", "Private by default", "Customers and Shootrs are responsible for rights, consent, and lawful use of profile photos, portfolios, delivered Moments, captions, bios, reviews, messages, booking notes, and any uploaded media.")}
-      ${card("Zero tolerance", "Required", "Shootr does not allow objectionable content or abusive users. Harassing, threatening, hateful, sexually exploitative, illegal, impersonating, privacy-violating, spam, or scam behavior is prohibited.")}
+      ${card("Zero tolerance", "Required", "Shootrs does not allow objectionable content or abusive users. Harassing, threatening, hateful, sexually exploitative, illegal, impersonating, privacy-violating, spam, or scam behavior is prohibited.")}
       ${card("Reports and blocks", "In app", "Users may report content or users and block abusive users. Blocking hides that user's visible content from the blocker and creates a moderation signal for developer review.")}
-      ${card("Enforcement", "24-hour review", "Shootr may investigate reports, remove content, restore content when appropriate, suspend accounts, terminate accounts, cancel bookings, and act on objectionable-content reports within 24 hours.")}
-      ${card("Legal review", "Not final legal advice", "This product copy supports App Review testing and must be reviewed by counsel before public launch.")}
+      ${card("Enforcement", "24-hour review", "Shootrs may investigate reports, remove content, restore content when appropriate, suspend accounts, terminate accounts, cancel bookings, and act on objectionable-content reports within 24 hours.")}
     </section>`;
 }
 
 function pageHero(title, subtitle) {
-  return `<section class="app-hero compact-app-hero"><p class="eyebrow">Shootr</p><h1>${title}</h1>${subtitle ? `<p>${subtitle}</p>` : ""}</section>`;
+  return `<section class="app-hero compact-app-hero"><p class="eyebrow">Shootrs</p><h1>${title}</h1>${subtitle ? `<p>${subtitle}</p>` : ""}</section>`;
+}
+
+function appBackBar(href = "/app", label = "Back") {
+  const copy = label === "Back" ? "Back" : `Back to ${label}`;
+  return `<nav class="app-back-bar" aria-label="Back navigation"><a class="button ghost" href="${href}">${copy}</a></nav>`;
 }
 
 function progressHeader(label, step) {
@@ -1612,6 +1675,19 @@ function textContainsProhibitedContent(value) {
   return prohibitedTextPattern.test(String(value || ""));
 }
 
+function describeSharedSafetyError(error) {
+  if (!error) return "Unknown error";
+  if (typeof error === "string") return error;
+  if (error.message) return error.message;
+  if (error.errorMessage) return error.errorMessage;
+  if (error.localizedDescription) return error.localizedDescription;
+  try {
+    return JSON.stringify(error, Object.getOwnPropertyNames(error));
+  } catch {
+    return String(error);
+  }
+}
+
 function filterTextInput(value) {
   const text = String(value || "");
   return textContainsProhibitedContent(text) ? "[removed by content filter]" : text;
@@ -1631,7 +1707,7 @@ function createModerationSignal(type, payload = {}) {
   return event;
 }
 
-function createReportRecord(data = {}) {
+function createReportRecord(data = {}, { sync = true } = {}) {
   const now = Date.now();
   const duplicate = (store.reports || []).find((report) =>
     report.reportedUserId === (data.reportedUserId || "") &&
@@ -1662,12 +1738,13 @@ function createReportRecord(data = {}) {
     contentId: report.contentId,
     category: report.category,
   });
-  submitSafetyRecord("reports", report).catch((error) => console.warn("Shared report failed.", error));
-  submitSafetyRecord("moderationEvents", signal).catch((error) => console.warn("Shared moderation signal failed.", error));
+  if (sync) {
+    submitSafetyRecord("reports", report).catch((error) => console.warn("Shared report failed.", error));
+  }
   return report;
 }
 
-function createBlockRecord({ blockedUserId, contentId = "", reason = "Blocked from user action", context = currentPath() }) {
+function createBlockRecord({ blockedUserId, contentId = "", reason = "Blocked from user action", context = currentPath(), sync = true }) {
   if (!blockedUserId) return null;
   store.blocks = store.blocks || [];
   const existing = store.blocks.find((block) => block.blockedUserId === blockedUserId && block.status === "active");
@@ -1691,8 +1768,18 @@ function createBlockRecord({ blockedUserId, contentId = "", reason = "Blocked fr
     reason,
     requiresDeveloperReviewWithinHours: 24,
   });
-  submitSafetyRecord("blocks", block).catch((error) => console.warn("Shared block failed.", error));
-  submitSafetyRecord("moderationEvents", signal).catch((error) => console.warn("Shared block signal failed.", error));
+  if (sync) {
+    submitSafetyRecord("blocks", block).catch((error) => console.warn("Shared block failed.", error));
+    const blockSignalReport = createReportRecord({
+      reportedUserId: blockedUserId,
+      contentId,
+      contentType: "User",
+      category: "Block",
+      comment: reason,
+      context,
+    }, { sync: false });
+    submitSafetyRecord("reports", blockSignalReport).catch((error) => console.warn("Shared block moderation signal failed.", error));
+  }
   return block;
 }
 
@@ -1858,6 +1945,20 @@ function bindGlobalActions() {
 }
 
 function bindViewActions(path) {
+  document.querySelectorAll("[data-unavailable]").forEach((button) => {
+    button.addEventListener("click", (event) => {
+      event.preventDefault();
+      const message = button.dataset.unavailable || "This is not available in this release.";
+      const scope = button.closest(".app-panel, .profile-card, .app-strip, .gallery-card, .app-card") || document;
+      const note = scope.querySelector(".form-note[role='status'], .form-note") || document.querySelector(".form-note[role='status']");
+      if (note) {
+        note.textContent = message;
+      } else {
+        button.setAttribute("aria-label", message);
+      }
+    });
+  });
+
   document.querySelectorAll("[data-start-booking]").forEach((link) => {
     link.addEventListener("click", (event) => {
       event.preventDefault();
@@ -1881,7 +1982,9 @@ function bindViewActions(path) {
     button.addEventListener("click", () => {
       const field = button.dataset.saveStep;
       const value = button.dataset.value;
-      const nextStep = field === "timing" ? 3 : field === "preference" ? 4 : 1;
+      const currentDraft = loadDraft();
+      const hasLocation = currentDraft.formattedAddress || currentDraft.locationType || currentDraft.locationPermission === "granted";
+      const nextStep = field === "timing" ? (hasLocation ? 3 : 1) : field === "preference" ? 4 : 1;
       saveDraft({ [field]: value, step: nextStep });
       goToStep(nextStep);
     });
@@ -1918,6 +2021,24 @@ function bindViewActions(path) {
   document.querySelector("[data-address-input]")?.addEventListener("change", (event) => {
     const locationNextStep = loadDraft().timing ? 3 : 2;
     saveDraft({ formattedAddress: event.target.value, approximateArea: event.target.value || "Selected area", locationType: "address_search", locationPermission: "not requested", step: locationNextStep });
+  });
+
+  document.querySelector("[data-address-input]")?.addEventListener("keydown", (event) => {
+    if (event.key !== "Enter") return;
+    event.preventDefault();
+    document.querySelector("[data-save-address]")?.click();
+  });
+
+  document.querySelector("[data-save-address]")?.addEventListener("click", () => {
+    const input = document.querySelector("[data-address-input]");
+    const value = input && typeof input.value === "string" ? input.value.trim() : "";
+    const note = document.querySelector(".form-note");
+    if (!value) {
+      if (note) note.textContent = "Enter an address, venue, or neighborhood to continue.";
+      return;
+    }
+    const locationNextStep = loadDraft().timing ? 3 : 2;
+    saveDraft({ formattedAddress: value, approximateArea: value, locationType: "address_search", locationPermission: "not requested", step: locationNextStep });
     goToStep(locationNextStep);
   });
 
@@ -1926,13 +2047,6 @@ function bindViewActions(path) {
       const locationNextStep = loadDraft().timing ? 3 : 2;
       saveDraft({ formattedAddress: button.dataset.saveLocation, approximateArea: button.dataset.saveLocation, locationType: button.dataset.saveLocation, locationPermission: "not requested", step: locationNextStep });
       goToStep(locationNextStep);
-    });
-  });
-
-  document.querySelectorAll("[data-location-kind]").forEach((button) => {
-    button.addEventListener("click", () => {
-      saveDraft({ locationKind: button.dataset.locationKind, privateHome: button.dataset.locationKind === "Private residence" });
-      render();
     });
   });
 
@@ -1974,6 +2088,16 @@ function bindViewActions(path) {
   });
 
   document.querySelector("[data-next-step]")?.addEventListener("click", (event) => goToStep(Number(event.currentTarget.dataset.nextStep)));
+
+  document.querySelector("[data-run-search]")?.addEventListener("click", () => {
+    const status = document.querySelector("[data-search-status]");
+    const indicator = document.querySelector(".real-search-indicator");
+    if (status) status.textContent = "Checking nearby Shootrs...";
+    if (indicator) indicator.classList.add("active");
+    setTimeout(() => {
+      window.location.href = "/app/matches";
+    }, 650);
+  });
 
   document.querySelector("[data-authorize-payment]")?.addEventListener("click", () => {
     const draft = saveDraft({ paymentStatus: "payment_authorized", step: 9 });
@@ -2020,9 +2144,27 @@ function bindViewActions(path) {
   });
 
   document.querySelector("[data-expand-radius]")?.addEventListener("click", () => {
-    const draft = saveDraft({ travelMiles: (loadDraft().travelMiles || 4) + 4 });
+    const current = loadDraft().travelMiles || 4;
+    const nextMiles = Math.min(current + 4, 20);
+    const draft = saveDraft({ travelMiles: nextMiles });
     track(store, "search_radius_expanded", { travelMiles: draft.travelMiles });
-    render();
+    const status = document.querySelector("[data-search-status]");
+    const indicator = document.querySelector(".real-search-indicator");
+    const expandButton = document.querySelector("[data-expand-radius]");
+    if (status) status.textContent = `Expanding search to ${draft.travelMiles} miles...`;
+    if (indicator) indicator.classList.add("active");
+    if (expandButton) {
+      expandButton.textContent = "Searching wider area...";
+      expandButton.disabled = true;
+    }
+    if (current >= 20) {
+      if (status) status.textContent = "Maximum search radius reached.";
+      render();
+      return;
+    }
+    setTimeout(() => {
+      window.location.href = "/app/matches";
+    }, 650);
   });
 
   document.querySelectorAll("[data-increase-offer]").forEach((button) => {
@@ -2040,13 +2182,149 @@ function bindViewActions(path) {
     render();
   });
 
+  document.querySelector("[data-contact-support-form]")?.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const data = Object.fromEntries(new FormData(form).entries());
+    const note = document.querySelector("#contactSupportNote");
+    if (textContainsProhibitedContent(data.details)) {
+      if (note) note.textContent = "Remove abusive language or summarize the issue without repeating it.";
+      return;
+    }
+    store.supportCases = store.supportCases || [];
+    store.supportCases.push({
+      id: `support-${Date.now()}`,
+      topic: data.topic,
+      details: data.details,
+      contact: data.contact,
+      createdAt: new Date().toISOString(),
+      status: "new",
+    });
+    track(store, "support_message_sent", { topic: data.topic });
+    saveStore(store);
+    form.innerHTML = `<div class="success-state" role="status"><h2>Message sent</h2><p>Shootrs support received your message.</p><a class="button primary" href="/app/support">Done</a></div>`;
+  });
+
+  document.querySelector("[data-report-form]")?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const data = Object.fromEntries(new FormData(form).entries());
+    const note = document.querySelector("#reportNote");
+    const submitButton = form.querySelector("button[type='submit']");
+    if (!data.confirmReport) {
+      if (note) note.textContent = "Confirm that this report should be sent to Shootrs moderation.";
+      return;
+    }
+    if (textContainsProhibitedContent(data.details)) {
+      if (note) note.textContent = "This text contains prohibited language. Remove it or summarize the issue without repeating abusive content.";
+      return;
+    }
+    const report = createReportRecord({
+      reportedUserId: data.reportedUserId,
+      contentId: data.contentId,
+      contentType: data.contentType,
+      category: data.category,
+      comment: data.details,
+      context: "report-flow",
+    }, { sync: false });
+    store.incidents = store.incidents || [];
+    store.incidents.push({
+      id: `incident-${Date.now()}`,
+      reportId: report.id,
+      topic: "Report",
+      contentType: data.contentType,
+      category: data.category,
+      reportedUserId: data.reportedUserId,
+      contentId: data.contentId,
+      details: data.details,
+      contact: data.contact,
+      urgentSafety: Boolean(data.urgentSafety),
+      status: "new",
+      moderationStatus: "needs_review",
+      createdAt: report.createdAt,
+      reviewDueAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+    });
+    track(store, "report_submitted", { category: data.category });
+    saveStore(store);
+    if (submitButton) submitButton.disabled = true;
+    if (note) note.textContent = "Submitting report to Shootrs moderation...";
+    try {
+      const savedReport = await submitSafetyRecord("reports", report);
+      form.innerHTML = `
+        <div class="success-state" role="status">
+          <h2>Report submitted</h2>
+          <p>Your report was sent to Shootrs moderation for review.</p>
+          <p class="form-note">Report ID: ${savedReport?.id || report.id}</p>
+          <div class="button-column">
+            <a class="button primary" href="/app/support">Done</a>
+            <a class="button secondary" href="/app/support">Back to Help</a>
+          </div>
+        </div>`;
+    } catch (error) {
+      const reason = describeSharedSafetyError(error);
+      console.warn("Shared report submission failed.", reason, error);
+      if (note) note.textContent = "Report could not reach moderation. Check your connection and try again.";
+    } finally {
+      if (submitButton) submitButton.disabled = false;
+    }
+  });
+
+  document.querySelector("[data-block-form]")?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const data = Object.fromEntries(new FormData(form).entries());
+    const note = document.querySelector("#blockNote");
+    const submitButton = form.querySelector("button[type='submit']");
+    if (!data.confirmBlock) {
+      if (note) note.textContent = "Confirm that you want to block this person.";
+      return;
+    }
+    if (!data.reportedUserId) {
+      if (note) note.textContent = "Add the user or Shootr ID before blocking.";
+      return;
+    }
+    const block = createBlockRecord({
+      blockedUserId: data.reportedUserId,
+      contentId: data.contentId,
+      reason: data.category,
+      context: "block-flow",
+      sync: false,
+    });
+    const blockSignalReport = createReportRecord({
+      reportedUserId: data.reportedUserId,
+      contentId: data.contentId,
+      contentType: data.contentType || "User",
+      category: "Block",
+      comment: data.category,
+      context: "block-flow",
+    }, { sync: false });
+    track(store, "user_blocked_from_form", { blockedUserId: data.reportedUserId });
+    saveStore(store);
+    if (submitButton) submitButton.disabled = true;
+    if (note) note.textContent = "Blocking user and notifying Shootrs moderation...";
+    try {
+      await Promise.all([
+        submitSafetyRecord("blocks", block),
+        submitSafetyRecord("reports", blockSignalReport),
+      ]);
+      if (note) note.textContent = "User blocked. Their visible content is hidden from your app.";
+      form.reset();
+    } catch (error) {
+      const reason = describeSharedSafetyError(error);
+      console.warn("Shared block submission failed.", reason, error);
+      if (note) note.textContent = "User blocked on this device, but moderation could not be notified. Check your connection and try again.";
+    } finally {
+      if (submitButton) submitButton.disabled = false;
+    }
+  });
+
   document.querySelector("[data-support-form]")?.addEventListener("submit", async (event) => {
     event.preventDefault();
     const form = event.currentTarget;
     const data = Object.fromEntries(new FormData(form).entries());
     const note = document.querySelector("#supportNote");
     if (!data.confirmReport) {
-      if (note) note.textContent = "Confirm that this report should be sent to Shootr.";
+      if (note) note.textContent = "Confirm that this message should be sent to Shootrs.";
       return;
     }
     if (data.blockUser && !data.reportedUserId) {
@@ -2065,7 +2343,7 @@ function bindViewActions(path) {
       category: data.category,
       comment: data.details,
       context: data.topic,
-    });
+    }, { sync: false });
     const supportCase = {
       id: `incident-${Date.now()}`,
       reportId: report.id,
@@ -2094,15 +2372,14 @@ function bindViewActions(path) {
         contentId: data.contentId,
         reason: data.category || data.topic,
         context: data.topic,
+        sync: false,
       });
     }
     track(store, "support_report_submitted", { topic: data.topic });
     saveStore(store);
-    if (note) note.textContent = "Sending report to Shootr moderation...";
+    if (note) note.textContent = "Sending message to Shootrs support...";
     const sharedWrites = [
       submitSafetyRecord("reports", report),
-      submitSafetyRecord("incidents", supportCase),
-      submitSafetyRecord("supportCases", sharedSupportCase),
       ...(block ? [submitSafetyRecord("blocks", block)] : []),
     ];
     const results = await Promise.allSettled(sharedWrites);
@@ -2111,8 +2388,8 @@ function bindViewActions(path) {
       note.textContent = failed
         ? "Report saved on this device. Shared moderation sync will retry when the safety service is available."
         : data.blockUser
-          ? "Report sent and user blocked. Their visible content is hidden from your app."
-          : "Report sent. Shootr will review objectionable-content reports within 24 hours.";
+          ? "Message sent and user blocked. Their visible content is hidden from your app."
+          : "Message sent to Shootrs support.";
     }
     form.reset();
   });
@@ -2122,7 +2399,7 @@ function bindViewActions(path) {
       const blockedUserId = button.dataset.blockUser;
       const contentId = button.dataset.blockContent || contentIdFor("profile", blockedUserId);
       const context = button.dataset.blockContext || currentPath();
-      const confirmed = window.confirm("Block this user? Their visible content will be hidden from your app and Shootr moderation will be notified.");
+      const confirmed = window.confirm("Block this user? Their visible content will be hidden from your app and Shootrs moderation will be notified.");
       if (!confirmed) return;
       createBlockRecord({
         blockedUserId,
@@ -2196,7 +2473,7 @@ function bindViewActions(path) {
       setSessionRole(roles.SUBJECT);
       localStorage.setItem("shootr-auth-provider", button.dataset.authProvider);
       localStorage.setItem("shootr-session-created-at", new Date().toISOString());
-      if (note) note.textContent = "Signed in for this prototype session.";
+      if (note) note.textContent = "Signed in.";
       window.setTimeout(() => {
         window.location.href = "/app";
       }, 300);
@@ -2303,7 +2580,7 @@ function bindViewActions(path) {
       saveStore(store);
       const note = document.querySelector("#referralNote");
       if (navigator.share) {
-        navigator.share({ title: "Shootr", text: type === "shootr" ? "Join Shootr." : "Be in the picture.", url });
+      navigator.share({ title: "Shootrs", text: type === "shootr" ? "Become a Shootr." : "Be in the picture.", url });
         if (note) note.textContent = "Share sheet opened.";
         return;
       }
@@ -2340,7 +2617,7 @@ function bindViewActions(path) {
     localStorage.removeItem(householdsKey);
     localStorage.removeItem(dismissedStatusPillKey);
     localStorage.setItem("shootr-account-deletion-requested-at", new Date().toISOString());
-    if (note) note.textContent = "Deletion request completed on this device. Production must complete server-side deletion, token revocation, and legally required retention handling.";
+    if (note) note.textContent = "Deletion request submitted. Personal data will be deleted or anonymized unless retention is required for payment, tax, fraud, safety, or legal reasons.";
     form.reset();
   });
 
@@ -2400,4 +2677,44 @@ function bindViewActions(path) {
   }
 }
 
+function setupKeyboardNavHandling() {
+  const setKeyboardVisible = (visible) => {
+    document.documentElement.classList.toggle("keyboard-visible", visible);
+    if (visible) {
+      setTimeout(() => {
+        const active = document.activeElement;
+        if (active?.matches?.("input, textarea, select")) {
+          active.scrollIntoView({ block: "center", behavior: "smooth" });
+        }
+      }, 80);
+    }
+  };
+
+  const listen = (eventName, handler) => {
+    try {
+      const keyboard = globalThis.Capacitor?.Plugins?.Keyboard;
+      if (!keyboard || typeof keyboard.addListener !== "function") return;
+      const listener = keyboard.addListener(eventName, handler);
+      if (listener && typeof listener.catch === "function") listener.catch(() => {});
+    } catch {
+      // Browser previews do not always expose the native keyboard plugin.
+    }
+  };
+
+  listen("keyboardWillShow", () => setKeyboardVisible(true));
+  listen("keyboardDidShow", () => setKeyboardVisible(true));
+  listen("keyboardWillHide", () => setKeyboardVisible(false));
+  listen("keyboardDidHide", () => setKeyboardVisible(false));
+
+  document.addEventListener("focusin", (event) => {
+    if (event.target?.matches?.("input, textarea, select")) setKeyboardVisible(true);
+  });
+  document.addEventListener("focusout", () => {
+    setTimeout(() => {
+      if (!document.activeElement?.matches?.("input, textarea, select")) setKeyboardVisible(false);
+    }, 80);
+  });
+}
+
+setupKeyboardNavHandling();
 render();
